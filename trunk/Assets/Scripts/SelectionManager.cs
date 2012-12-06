@@ -36,6 +36,7 @@ public class SelectionManager : MonoBehaviour
 	
 		oldmouseon = mouseon;	
 	
+		
 		if (Input.GetKeyDown (KeyCode.Delete)) {
 			GameObject.Destroy (selected);
 		}
