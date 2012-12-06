@@ -68,13 +68,16 @@ public class GUIScript : MonoBehaviour {
 		}
 		GUILayout.EndHorizontal();	
 		GUILayout.BeginHorizontal();
-		if(GUILayout.Button ("CreateIt")){
+		
+		foreach(Transform t in list){
+		if(GUILayout.Button (t.name)){
 			GameObject clone, clone2;
-			clone = Instantiate(list[0],new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
+			clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
 
 			
-			clone2 = Instantiate(list[0],new Vector3(15, 0, 0), Quaternion.identity) as GameObject;
+			clone2 = Instantiate(t,new Vector3(15, 0, 0), Quaternion.identity) as GameObject;
 
+		}
 		}
 		GUILayout.EndHorizontal();	
 	}
