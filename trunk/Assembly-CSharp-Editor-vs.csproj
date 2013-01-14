@@ -5,7 +5,7 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{98618B71-7D9E-E003-E917-FAB3CC1DEE96}</ProjectGuid>
+	<ProjectGuid>{FDE76E55-8F95-B17A-F5EB-F218F1B07F99}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_3_5_6;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_STANDALONE_WIN;ENABLE_GENERICS;ENABLE_DUCK_TYPING;ENABLE_TERRAIN;ENABLE_MOVIES;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_SUBSTANCE</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_2;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_ANDROID;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_DUCK_TYPING</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -63,14 +63,16 @@
      <Compile Include="Assets\Vuforia\Editor\QCAR\Scripts\TrackableAccessor.cs" />
      <Compile Include="Assets\Vuforia\Editor\QCAR\Scripts\TrackerEditor.cs" />
      <Compile Include="Assets\Vuforia\Editor\QCAR\Scripts\VirtualButtonEditor.cs" />
+     <Compile Include="Assets\Vuforia\Editor\QCAR\Temp\DatasetImportWindow.cs" />
      <None Include="Assets\Vuforia\License_Readme.txt" />
      <None Include="Assets\Vuforia\license.txt" />
-     <None Include="Assets\Vuforia\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
+     <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
+     <None Include="Assets\StreamingAssets\QCAR\Test123.xml" />
      <None Include="Assets\Vuforia\Plugins\Android\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
-      <Project>{97074710-C62E-57B4-64FA-956479FA55F6}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
+      <Project>{78B42BEC-C559-63E3-6996-7DE1ABC1B6B0}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

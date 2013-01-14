@@ -39,20 +39,20 @@ public class GUIScript : MonoBehaviour {
 	
 	void DrawMainMenuGUI(){
 		GUILayout.BeginHorizontal();
-		if(GUILayout.Button ("Build your own room")){
+		if(GUILayout.Button ("Build your own room", GUILayout.Height(100))){
 			SetState (State.BOYR_MODE);
 		}
 		GUILayout.EndHorizontal();	
 		
 		GUILayout.BeginHorizontal();
-		if(GUILayout.Button ("Reallife mode")){
+		if(GUILayout.Button ("Reallife mode", GUILayout.Height(100))){
 			SetState (State.RL_MODE);
 		}
 		GUILayout.EndHorizontal();	
 		
 		GUILayout.BeginHorizontal();
 
-		if(GUILayout.Button ("Exit")){
+		if(GUILayout.Button ("Exit", GUILayout.Height(100))){
 			Application.Quit();
 	
 		}
@@ -63,14 +63,14 @@ public class GUIScript : MonoBehaviour {
 	
 	void DrawBoyrModeGUI(){
 		GUILayout.BeginHorizontal();
-		if(GUILayout.Button ("Back to main menu")){
+		if(GUILayout.Button ("Back to main menu", GUILayout.Height(100))){
 			SetState(State.MAIN_MENU);				
 		}
 		GUILayout.EndHorizontal();	
 		GUILayout.BeginHorizontal();
 		
 		foreach(Transform t in list){
-		if(GUILayout.Button (t.name)){
+		if(GUILayout.Button (t.name, GUILayout.Height(100))){
 			GameObject clone, clone2;
 			clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
 
@@ -84,7 +84,7 @@ public class GUIScript : MonoBehaviour {
 	
 	void DrawRlModeGUI(){
 		GUILayout.BeginHorizontal();
-		if(GUILayout.Button ("Back to main menu")){
+		if(GUILayout.Button ("Back to main menu", GUILayout.Height(100))){
 			SetState(State.MAIN_MENU);				
 		}
 		GUILayout.EndHorizontal();
@@ -96,4 +96,6 @@ public class GUIScript : MonoBehaviour {
 	void SetState(State state){
 		this.state = state;
 	}
+	
+	
 }
