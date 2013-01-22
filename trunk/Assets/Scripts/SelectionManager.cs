@@ -9,6 +9,7 @@ public class SelectionManager : MonoBehaviour
 	private bool changedSelected;
 	private Color oldOnMouseColor;
 	private bool changedOnMouse;
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -36,28 +37,39 @@ public class SelectionManager : MonoBehaviour
 	
 		oldmouseon = mouseon;	
 	
-		
-		if (Input.GetKeyDown (KeyCode.Delete)) {
-			GameObject.Destroy (selected);
-		}
-		
-		if(Input.GetKeyDown(KeyCode.UpArrow)){
-			selected.transform.Translate(Vector3.up ,  Space.World);
-		}
-		else if(Input.GetKeyDown(KeyCode.DownArrow)){
-			selected.transform.Translate(Vector3.down ,  Space.World);
-		}
+		if(selected){
+			if (Input.GetKeyDown (KeyCode.Delete)) {
+				GameObject.Destroy (selected);
+			}
+			
+			if(Input.GetKeyDown(KeyCode.UpArrow)){
+				selected.transform.Translate(Vector3.up ,  Space.World);
+			}
+			else if(Input.GetKeyDown(KeyCode.DownArrow)){
+				selected.transform.Translate(Vector3.down ,  Space.World);
+			}
+			
+			//move
+			if (Input.touchCount == 1 && Input.touches[0].phase == TouchPhase.Moved){
+				Vector3 trans = new Vector3(-Input.touches[0].deltaPosition.x, 0, -Input.touches[0].deltaPosition.y)*0.1F;
+				selected.transform.Translate(trans, Space.World);
+			}				
+			
+		    //rorate        
+		    if (Input.touchCount > 1 && Input.touches[0].phase == TouchPhase.Moved){
+				selected.transform.Rotate(0, Input.touches[0].deltaPosition.x, 0, Space.World);
+			}
+			//end rotate
+		}		
 	}
 	
 	void mouseOverColor ()
 	{
-		if (oldmouseon != mouseon) {
-		
+		if (oldmouseon != mouseon) {			
 			changedOnMouse = true;
 		}
 		
-		if (changedOnMouse && oldmouseon != null) {
-			
+		if (changedOnMouse && oldmouseon != null) {			
 			foreach (Transform t in oldmouseon.transform) {
 				t.renderer.material.color -= new Color (0.8F, 0.2F, 0.2F);
 			}   
@@ -66,11 +78,8 @@ public class SelectionManager : MonoBehaviour
 		if (mouseon != null && changedOnMouse) {
 			foreach (Transform t in mouseon.transform) {
 				oldOnMouseColor = t.renderer.material.color;
-				t.renderer.material.color += new Color (0.8F, 0.2F, 0.2F);
-			
-			
-			} 
-		
+				t.renderer.material.color += new Color (0.8F, 0.2F, 0.2F);			
+			} 		
 		}
 	}
 	
@@ -87,9 +96,7 @@ public class SelectionManager : MonoBehaviour
 			foreach (Transform t in oldselected.transform) {
 				t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
 			}   
-		}		
-		
-
+		}
 	}
 
 	GameObject giveCastTarget ()
@@ -102,5 +109,4 @@ public class SelectionManager : MonoBehaviour
 		return null;
 	}
 	
-
 }
