@@ -1,10 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
-public class mousestuff : MonoBehaviour {
-	
-	
-	bool selected = false;
+public class TransformBehaviour : MonoBehaviour {
+
 	// Use this for initialization
 	void Start () {
 	
@@ -13,12 +11,5 @@ public class mousestuff : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	
-	}
-	
-	
-	
-	void OnSelect()
-	{
-		this.selected = true;
 	}
 }

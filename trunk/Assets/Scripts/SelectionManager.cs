@@ -31,6 +31,15 @@ public class SelectionManager : MonoBehaviour
 				selected = mouseon;
 				changedSelected = true;
 			}
+			if(mouseon == null && selected != null)
+			{
+				foreach (Transform t in selected.transform) {
+					oldColor = t.renderer.material.color;
+					t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+				}    
+				oldselected = selected;
+				selected = null;
+			}
 		}
 		mouseOverColor ();	
 		selectColor ();
