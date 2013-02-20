@@ -76,7 +76,7 @@ public class GUIScript : MonoBehaviour {
 		}
 		GUILayout.EndHorizontal();
 
-        scrollPosition = GUI.BeginScrollView(new Rect(10, 150, 150, 600), scrollPosition, new Rect(0, 0, 120, list.Count * FURN_BUTTON_HEIGHT), false, true);
+        scrollPosition = GUI.BeginScrollView(new Rect(0, 100, 150, Mathf.Min(600,list.Count * FURN_BUTTON_HEIGHT)), scrollPosition, new Rect(0, 100, 120, list.Count * FURN_BUTTON_HEIGHT), false, 600  < list.Count * FURN_BUTTON_HEIGHT);
 		
 		
 		foreach(Transform t in list){
