@@ -1,12 +1,14 @@
 /*==============================================================================
-            Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+            Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
             All Rights Reserved.
             Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-// A custom handler that implements the IQCARErrorHandler interface.
+/// <summary>
+/// A custom handler that implements the IQCARErrorHandler interface.
+/// </summary>
 public class DefaultInitializationErrorHandler : MonoBehaviour
 {
     #region PRIVATE_MEMBER_VARIABLES
@@ -20,50 +22,13 @@ public class DefaultInitializationErrorHandler : MonoBehaviour
 
 
 
-    #region PUBLIC_METHODS
-
-    // Implementation of the IQCARErrorHandler function which sets the
-    // error message.
-    public void SetErrorCode(QCAR.InitError errorCode)
-    {
-        switch (errorCode)
-        {
-            case QCAR.InitError.INIT_DEVICE_NOT_SUPPORTED:
-                mErrorText =
-                      "Failed to initialize QCAR because this device is not " +
-                      "supported.";
-
-                break;
-            case QCAR.InitError.INIT_ERROR:
-                mErrorText = "Failed to initialize QCAR.";
-                break;
-        }    
-    }
-
-
-    // Implementation of the IQCARErrorHandler function which sets if an
-    // error has been thrown.
-    public void SetErrorOccurred(bool errorOccurred)
-    {
-        mErrorOccurred = errorOccurred;
-
-        // We set the clear mode of the camera to solid. Otherwise the Window is
-        // messed up.
-        if (errorOccurred)
-            this.camera.clearFlags = CameraClearFlags.SolidColor;
-    }
-
-    #endregion // PUBLIC_METHODS
-
-
-
     #region UNTIY_MONOBEHAVIOUR_METHODS
 
     void Start()
     {
         // Check for an initialization error on start.
-        QCAR.InitError errorCode = QCAR.CheckInitializationError();
-        if (errorCode != QCAR.InitError.INIT_SUCCESS)
+        QCARUnity.InitError errorCode = QCARUnity.CheckInitializationError();
+        if (errorCode != QCARUnity.InitError.INIT_SUCCESS)
         {
             SetErrorCode(errorCode);
             SetErrorOccurred(true);
@@ -97,6 +62,37 @@ public class DefaultInitializationErrorHandler : MonoBehaviour
         if (GUI.Button(new Rect(Screen.width / 2 - 75, Screen.height - 60,
                                     150, 50), "Close"))
             Application.Quit();
+    }
+
+    // Implementation of the IQCARErrorHandler function which sets the
+    // error message.
+    private void SetErrorCode(QCARUnity.InitError errorCode)
+    {
+        switch (errorCode)
+        {
+            case QCARUnity.InitError.INIT_DEVICE_NOT_SUPPORTED:
+                mErrorText =
+                      "Failed to initialize QCAR because this device is not " +
+                      "supported.";
+
+                break;
+            case QCARUnity.InitError.INIT_ERROR:
+                mErrorText = "Failed to initialize QCAR.";
+                break;
+        }
+    }
+
+
+    // Implementation of the IQCARErrorHandler function which sets if an
+    // error has been thrown.
+    private void SetErrorOccurred(bool errorOccurred)
+    {
+        mErrorOccurred = errorOccurred;
+
+        // We set the clear mode of the camera to solid. Otherwise the Window is
+        // messed up.
+        if (errorOccurred)
+            this.camera.clearFlags = CameraClearFlags.SolidColor;
     }
 
     #endregion // PRIVATE_METHODS

@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -77,7 +77,8 @@ public class SceneManager
     // Singleton: Still uses lazy initialization:
     // Private static variables initialized on first reference to class.
     private static SceneManager mInstance;
-    private const int SECONDS_TO_WAIT = 5;
+    private static TimeSpan UPDATE_INTERVAL = TimeSpan.FromSeconds(60);
+    private DateTime mLastUpdate = DateTime.Now;
 
     #endregion // PRIVATE_MEMBER_VARIABLES
 
@@ -130,6 +131,8 @@ public class SceneManager
         mValidateScene = true;
 
         mSceneInitialized = true;
+
+        SetUnityVersion();
     }
 
     
@@ -199,9 +202,6 @@ public class SceneManager
             // Check if there are duplicate trackables in the scene.
             CheckForDuplicates(trackables);
 
-            // Check if there are trackables from different data sets in the scene.
-            CheckDataSets(trackables);
-
             // Validate all Virtual Buttons in the scene.
             VirtualButtonEditor.Validate();
 
@@ -212,10 +212,22 @@ public class SceneManager
         {
             mGoToARPage = false;
             System.Diagnostics.Process.Start(
-                "https://ar.qualcomm.com/qdevnet/projects");
+                "https://developer.vuforia.com/target-manager");
+        }
+
+        if (mLastUpdate.Add(UPDATE_INTERVAL) < DateTime.Now)
+        {
+            SetUnityVersion();
+            mLastUpdate = DateTime.Now;
         }
     }
 
+    private static void SetUnityVersion()
+    {
+        // Set the Unity version for internal use
+        string path = Path.Combine(Application.dataPath, "StreamingAssets/QCAR");
+        QCARUnityImpl.SetUnityVersion(path);
+    }
     
     public string[] GetImageTargetNames(string dataSetName)
     {
@@ -239,7 +251,7 @@ public class SceneManager
 
     public int GetNextFrameMarkerID()
     {
-        MarkerBehaviour[] markers =
+        IEditorMarkerBehaviour[] markers =
             (MarkerBehaviour[])UnityEngine.Object.FindObjectsOfType(
                 typeof(MarkerBehaviour));
 
@@ -328,17 +340,22 @@ public class SceneManager
     // Updates trackables in scene from config data.
     private void UpdateTrackableAppearance(TrackableBehaviour[] trackables)
     {
-        foreach (TrackableBehaviour tb in trackables)
+        // do not set appearance in play mode
+        if (!Application.isPlaying)
         {
-            // Ignore non-data set trackables.
-            if (!(tb is DataSetTrackableBehaviour))
+            foreach (TrackableBehaviour tb in trackables)
             {
-                continue;
-            }
+                // Ignore non-data set trackables.
+                if (!(tb is DataSetTrackableBehaviour))
+                {
+                    continue;
+                }
 
-            DataSetTrackableBehaviour trackable = (DataSetTrackableBehaviour)tb;
-            TrackableAccessor configApplier = AccessorFactory.Create(trackable);
-            configApplier.ApplyDataSetAppearance();
+                DataSetTrackableBehaviour trackable = (DataSetTrackableBehaviour) tb;
+                TrackableAccessor configApplier = AccessorFactory.Create(trackable);
+                if (configApplier != null)
+                    configApplier.ApplyDataSetAppearance();
+            }
         }
     }
 
@@ -356,7 +373,8 @@ public class SceneManager
 
             DataSetTrackableBehaviour trackable = (DataSetTrackableBehaviour)tb;
             TrackableAccessor configApplier = AccessorFactory.Create(trackable);
-            configApplier.ApplyDataSetProperties();
+            if (configApplier != null)
+                configApplier.ApplyDataSetProperties();
         }
     }
 
@@ -383,7 +401,7 @@ public class SceneManager
                 continue;
             }
 
-            DataSetTrackableBehaviour trackable = (DataSetTrackableBehaviour)tb;
+            IEditorDataSetTrackableBehaviour trackable = (DataSetTrackableBehaviour)tb;
 
             string dataSetName = trackable.DataSetName;
             string trackableName = trackable.TrackableName;
@@ -401,15 +419,16 @@ public class SceneManager
             if (trackable.GetType() == typeof(ImageTargetBehaviour))
             {
                 ImageTargetBehaviour it = (ImageTargetBehaviour)trackable;
+                IEditorImageTargetBehaviour editorIt = it;
 
-                ConfigData.ImageTarget itConfig = new ConfigData.ImageTarget();
+                ConfigData.ImageTargetData itConfig = new ConfigData.ImageTargetData();
 
-                itConfig.size = it.GetSize();
+                itConfig.size = editorIt.GetSize();
 
                 // Process Virtual Button list.
                 VirtualButtonBehaviour[] vbs =
                     it.GetComponentsInChildren<VirtualButtonBehaviour>();
-                itConfig.virtualButtons = new List<ConfigData.VirtualButton>(vbs.Length);
+                itConfig.virtualButtons = new List<ConfigData.VirtualButtonData>(vbs.Length);
                 foreach (VirtualButtonBehaviour vb in vbs)
                 {
                     Vector2 leftTop;
@@ -421,21 +440,22 @@ public class SceneManager
                         continue;
                     }
 
-                    ConfigData.VirtualButton vbConfig =
-                        new ConfigData.VirtualButton();
+                    ConfigData.VirtualButtonData vbConfig =
+                        new ConfigData.VirtualButtonData();
 
-                    vbConfig.name = vb.VirtualButtonName;
-                    vbConfig.enabled = vb.enabled;
+                    IEditorVirtualButtonBehaviour editorVB = vb;
+                    vbConfig.name = editorVB.VirtualButtonName;
+                    vbConfig.enabled = editorVB.enabled;
                     vbConfig.rectangle = new Vector4(leftTop.x,
                                                         leftTop.y,
                                                         rightBottom.x,
                                                         rightBottom.y);
-                    vbConfig.sensitivity = vb.SensitivitySetting;
+                    vbConfig.sensitivity = editorVB.SensitivitySetting;
 
                     itConfig.virtualButtons.Add(vbConfig);
                 }
 
-                sceneData.SetImageTarget(itConfig, it.TrackableName);
+                sceneData.SetImageTarget(itConfig, editorIt.TrackableName);
             }
             else if (trackable.GetType() == typeof(MultiTargetBehaviour))
             {
@@ -448,7 +468,7 @@ public class SceneManager
 
 
     // Check for duplicate Trackables in the scene.
-    private void CheckForDuplicates(TrackableBehaviour[] trackables)
+    private void CheckForDuplicates(IEditorTrackableBehaviour[] trackables)
     {
         //Before we serialize we check for duplicates and provide a warning.
         for (int i = 0; i < trackables.Length; ++i)
@@ -471,8 +491,8 @@ public class SceneManager
                 if (((trackables[i] is DataSetTrackableBehaviour) &&
                     (trackables[j] is DataSetTrackableBehaviour)))
                 {
-                    DataSetTrackableBehaviour castedTrackableA = (DataSetTrackableBehaviour)trackables[i];
-                    DataSetTrackableBehaviour castedTrackableB = (DataSetTrackableBehaviour)trackables[j];
+                    IEditorDataSetTrackableBehaviour castedTrackableA = (DataSetTrackableBehaviour)trackables[i];
+                    IEditorDataSetTrackableBehaviour castedTrackableB = (DataSetTrackableBehaviour)trackables[j];
 
                     string tDataA = castedTrackableA.DataSetName;
                     string tDataB = castedTrackableB.DataSetName;
@@ -505,47 +525,11 @@ public class SceneManager
     }
 
 
-    // Check if there are Trackables of different data sets in the scene.
-    private void CheckDataSets(TrackableBehaviour[] trackables)
-    {
-        string firstDataSet = "";
-
-        for (int i = 0; i < trackables.Length; ++i)
-        {
-            // Ignore non-data set trackables.
-            if (!(trackables[i] is DataSetTrackableBehaviour))
-            {
-                continue;
-            }
-
-            DataSetTrackableBehaviour dataSetTrackable = (DataSetTrackableBehaviour)trackables[i];
-
-            // Ignore default data sets...
-            if (dataSetTrackable.DataSetPath == QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME)
-            {
-                continue;
-            }
-
-            if (firstDataSet == "")
-            {
-                firstDataSet = dataSetTrackable.DataSetName;
-                continue;
-            }
-
-            if (firstDataSet != dataSetTrackable.DataSetName)
-            {
-                Debug.LogWarning("Different Data Sets in scene detected. Only a single data set can be active in the scene.");
-                return;
-            }
-        }
-    }
-
-
     // Correct scales of Trackables (make them uniform).
     private bool CorrectTrackableScales(TrackableBehaviour[] trackables)
     {
         bool scaleCorrected = false;
-        foreach (TrackableBehaviour trackable in trackables)
+        foreach (IEditorTrackableBehaviour trackable in trackables)
         {
             if (trackable.CorrectScale())
             {

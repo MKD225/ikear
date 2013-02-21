@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -9,12 +9,18 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-public class CameraDevice
+/// <summary>
+/// This class provides access to camera methods and properties
+/// </summary>
+public abstract class CameraDevice
 {
     #region NESTED
+    
 
-    // The mode used for camera capturing and video rendering.
-    // The camera device mode is set through the Unity inspector.
+    /// <summary>
+    /// The mode used for camera capturing and video rendering.
+    /// The camera device mode is set through the Unity inspector.
+    /// </summary>
     public enum CameraDeviceMode
     {
         // Best compromise between speed and quality.
@@ -24,7 +30,10 @@ public class CameraDevice
         // Optimize for quality. Application performance could go down.
         MODE_OPTIMIZE_QUALITY = -3
     }
-
+    
+    /// <summary>
+    /// The different focus modes for the active camera
+    /// </summary>
     public enum FocusMode
     {
         FOCUS_MODE_NORMAL,           // Default focus mode
@@ -34,8 +43,21 @@ public class CameraDevice
         FOCUS_MODE_MACRO             // Macro mode for close-up focus
     }
 
-    // This struct stores video mode data. This includes the width and height of
-    // the frame and the framerate of the camera.
+    /// <summary>
+    /// If the front, back or default camera on a device should be used
+    /// Not all devices have both a back and a front camera.
+    /// </summary>
+    public enum CameraDirection
+    {
+        CAMERA_DEFAULT,              // Default camera device.  Usually BACK
+        CAMERA_BACK,                 // Rear facing camera
+        CAMERA_FRONT                 // Front facing camera
+    };
+
+    /// <summary>
+    /// This struct stores video mode data. This includes the width and height of
+    /// the frame and the framerate of the camera.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VideoModeData
     {
@@ -50,7 +72,9 @@ public class CameraDevice
 
     #region PROPERTIES
 
-    // Returns an instance of a CameraDevice (thread safe)
+    /// <summary>
+    /// Returns an instance of a CameraDevice (thread safe)
+    /// </summary>
     public static CameraDevice Instance
     {
         get
@@ -62,7 +86,7 @@ public class CameraDevice
                 {
                     if (mInstance == null)
                     {
-                        mInstance = new CameraDevice();
+                        mInstance = new CameraDeviceImpl();
                     }
                 }
             }
@@ -70,7 +94,7 @@ public class CameraDevice
         }
     }
 
-    #endregion // NESTED
+    #endregion // PROPERTIES
 
 
 
@@ -78,264 +102,83 @@ public class CameraDevice
 
     private static CameraDevice mInstance = null;
 
-    private Dictionary<Image.PIXEL_FORMAT, Image> mCameraImages;
-
     #endregion // PRIVATE_MEMBERS
 
-    
+
 
     #region PUBLIC_METHODS
 
-    // Initializes the camera.
-    public bool Init()
-    {
-        if (cameraDeviceInitCamera() == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Initializes the camera.
+    /// </summary>
+    public abstract bool Init(CameraDirection cameraDirection);
 
 
-    // Deinitializes the camera.
-    public bool Deinit()
-    {
-        if (cameraDeviceDeinitCamera() == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Deinitializes the camera.
+    /// </summary>
+    public abstract bool Deinit();
 
 
-    // Starts the camera. Frames are being delivered.
-    public bool Start()
-    {
-        if (cameraDeviceStartCamera() == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Starts the camera. Frames are being delivered.
+    /// </summary>
+    public abstract bool Start();
 
 
-    // Stops the camera if video feed is not required
-    // (e.g. in non-AR mode of an application).
-    public bool Stop()
-    {
-        if (cameraDeviceStopCamera() == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Stops the camera if video feed is not required
+    /// (e.g. in non-AR mode of an application).
+    /// </summary>
+    public abstract bool Stop();
 
 
-    // Get the video mode data that matches the given CameraDeviceMode.
-    public VideoModeData GetVideoMode(CameraDeviceMode mode)
-    {
-        IntPtr videoModePtr = Marshal.AllocHGlobal(
-                            Marshal.SizeOf(typeof(VideoModeData)));
-        cameraDeviceGetVideoMode((int) mode, videoModePtr);
-        VideoModeData videoMode = (VideoModeData) Marshal.PtrToStructure
-                            (videoModePtr, typeof(VideoModeData));
-        Marshal.FreeHGlobal(videoModePtr);
-
-        return videoMode;
-    }
+    /// <summary>
+    ///  Get the video mode data that matches the given CameraDeviceMode.
+    /// </summary>
+    public abstract VideoModeData GetVideoMode(CameraDeviceMode mode);
 
 
-    // Chooses a video mode out of the list of modes.
-    public bool SelectVideoMode(CameraDeviceMode mode)
-    {
-        if (cameraDeviceSelectVideoMode((int) mode) == 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Chooses a video mode out of the list of modes.
+    /// This function can be only called after the camera device has been
+    /// initialized but not started yet. Once you have started the camera and
+    /// you need the select another video mode, you need to Stop(), Deinit(),
+    /// then Init() the camera before calling SelectVideoMode() again.
+    /// </summary>
+    public abstract bool SelectVideoMode(CameraDeviceMode mode);
 
 
-    // Activate or deactivate the camera device flash.
-    // Returns false if flash is not available or can't be activated.
-    public bool SetFlashTorchMode(bool on)
-    {
-        bool result = cameraDeviceSetFlashTorchMode(on ? 1 : 0) != 0;
-        Debug.Log("Toggle flash " + (on ? "ON" : "OFF") + " " + (result ?
-                  "WORKED" : "FAILED"));
-        return result;
-    }
+    /// <summary>
+    /// Activate or deactivate the camera device flash.
+    /// Returns false if flash is not available or can't be activated.
+    /// </summary>
+    public abstract bool SetFlashTorchMode(bool on);
 
 
-    // Set the active focus mode.
-    // Returns false if this mode is not available or can't be activated.
-    public bool SetFocusMode(FocusMode mode)
-    {
-        bool result = cameraDeviceSetFocusMode((int)mode) != 0;
-        Debug.Log("Requested Focus mode " + mode + (result ?
-                  " successfully." : ".  Not supported on this device."));
-        return result;
-    }
+    /// <summary>
+    /// Set the active focus mode.
+    /// Returns false if this mode is not available or can't be activated.
+    /// </summary>
+    public abstract bool SetFocusMode(FocusMode mode);
 
 
-    // Enables or disables the request of the camera image in the desired pixel
-    // format. Returns true on success, false otherwise. Note that this may
-    // result in processing overhead. Image are accessed using GetCameraImage.
-    // Note that there may be a delay of several frames until the camera image
-    // becomes availables.
-    public bool SetFrameFormat(Image.PIXEL_FORMAT format, bool enabled)
-    {
-        if (enabled)
-        {
-            if (!mCameraImages.ContainsKey(format))
-            {
-                if (qcarSetFrameFormat((int)format, 1) == 0)
-                {
-                    Debug.LogError("Failed to set frame format");
-                    return false;
-                }
-
-                Image newImage = new Image();
-                newImage.PixelFormat = format;
-                mCameraImages.Add(format, newImage);
-                return true;
-            }
-        }
-        else
-        {
-            if (mCameraImages.ContainsKey(format))
-            {
-                if (qcarSetFrameFormat((int)format, 0) == 0)
-                {
-                    Debug.LogError("Failed to set frame format");
-                    return false;
-                }
-
-                return mCameraImages.Remove(format);
-            }
-        }
-
-        return true;
-    }
+    /// <summary>
+    ///  Enables or disables the request of the camera image in the desired pixel
+    /// format. Returns true on success, false otherwise. Note that this may
+    /// result in processing overhead. Image are accessed using GetCameraImage.
+    /// Note that there may be a delay of several frames until the camera image
+    /// becomes availables.
+    /// </summary>
+    public abstract bool SetFrameFormat(Image.PIXEL_FORMAT format, bool enabled);
 
 
-    // Returns a camera images for the requested format. Returns null if
-    // this image is not available. You must call SetFrameFormat before
-    // accessing the corresponding camera image.
-    public Image GetCameraImage(Image.PIXEL_FORMAT format)
-    {
-        // Has the format been requested:
-        if (mCameraImages.ContainsKey(format))
-        {
-            // Check the image is valid:
-            Image image = mCameraImages[format];
-            if (image.IsValid())
-            {
-                return image;
-            }
-        }
-
-        // No valid image of this format:
-        return null;
-    }
-
-
-    // Returns the container of all requested images. The images may or may 
-    // not be initialized. Please use GetCameraImage for a list of
-    // available and valid images. Used only by the QCARBehaviour.
-    public Dictionary<Image.PIXEL_FORMAT, Image> GetAllImages()
-    {
-        return mCameraImages;
-    }
+    /// <summary>
+    /// Returns a camera images for the requested format. Returns null if
+    /// this image is not available. You must call SetFrameFormat before
+    /// accessing the corresponding camera image.
+    /// </summary>
+    public abstract Image GetCameraImage(Image.PIXEL_FORMAT format);
 
     #endregion // PUBLIC_METHODS
-
-
-
-    #region CONSTRUCTION
-
-    private CameraDevice()
-    {
-        mCameraImages = new Dictionary<Image.PIXEL_FORMAT, Image>();
-    }
-
-    #endregion // CONSTRUCTION
-
-
-
-    #region NATIVE_FUNCTIONS
-
-#if !UNITY_EDITOR
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceInitCamera();
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceDeinitCamera();
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceStartCamera();
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceStopCamera();
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceGetNumVideoModes();
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern void cameraDeviceGetVideoMode(int idx,
-                                    [In, Out]IntPtr videoMode);
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceSelectVideoMode(int idx);
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceSetFlashTorchMode(int on);
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int cameraDeviceSetFocusMode(int focusMode);
-
-    [DllImport(QCARMacros.PLATFORM_DLL)]
-    private static extern int qcarSetFrameFormat(int format, int enabled);
-
-#else
-
-    private static int cameraDeviceInitCamera() { return 0; }
-
-
-    private static int cameraDeviceDeinitCamera() { return 0; }
-
-
-    private static int cameraDeviceStartCamera() { return 0; }
-
-
-    private static int cameraDeviceStopCamera() { return 0; }
-
-
-    private static int cameraDeviceGetNumVideoModes() { return 0; }
-
-
-    private static void cameraDeviceGetVideoMode(int idx,
-                                    [In, Out]IntPtr videoMode) { }
-
-
-    private static int cameraDeviceSelectVideoMode(int idx) { return 0; }
-
-
-    private static int cameraDeviceSetFlashTorchMode(int on) { return 1; }
-
-
-    private static int cameraDeviceSetFocusMode(int focusMode) { return 1; }
-
-
-    private static int qcarSetFrameFormat(int format, int enabled) { return 1; }
-
-#endif
-
-    #endregion // NATIVE_FUNCTIONS
 }

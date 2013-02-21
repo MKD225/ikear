@@ -1,5 +1,5 @@
 ﻿/*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -15,23 +15,21 @@ public class AccessorFactory
     // single object).
     public static TrackableAccessor Create(TrackableBehaviour target)
     {
-        System.Type trackableType = target.GetType();
-
-        if (trackableType == typeof(MarkerBehaviour))
+        if (target is MarkerBehaviour)
         {
             return new MarkerAccessor((MarkerBehaviour)target);
         }
-        else if (trackableType == typeof(ImageTargetBehaviour))
+        else if (target is ImageTargetBehaviour)
         {
             return new ImageTargetAccessor((ImageTargetBehaviour)target);
         }
-        else if (trackableType == typeof(MultiTargetBehaviour))
+        else if (target is MultiTargetBehaviour)
         {
             return new MultiTargetAccessor((MultiTargetBehaviour)target);
         }
         else
         {
-            Debug.LogWarning(trackableType.ToString() +
+            Debug.LogWarning(target.GetType().ToString() +
                              " is not derived from TrackableBehaviour.");
             return null;
         }

@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -34,9 +34,9 @@ public class MultiTargetAccessor : TrackableAccessor
             return;
         }
 
-        MultiTargetBehaviour mtb = (MultiTargetBehaviour)mTarget;
+        IEditorMultiTargetBehaviour mtb = (MultiTargetBehaviour)mTarget;
 
-        ConfigData.MultiTarget mtConfig;
+        ConfigData.MultiTargetData mtConfig;
         if (TrackableInDataSet(mtb.TrackableName, mtb.DataSetName))
         {
             ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(mtb.DataSetName);
@@ -47,11 +47,11 @@ public class MultiTargetAccessor : TrackableAccessor
             // If the Trackable has been removed from the data set we reset it to default.
             ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
             dataSetData.GetMultiTarget(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME, out mtConfig);
-            mtb.DataSetPath = QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME;
-            mtb.TrackableName = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
+            mtb.SetDataSetPath(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
+            mtb.SetNameForTrackable(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
         }
 
-        List<ConfigData.MultiTargetPart> prtConfigs = mtConfig.parts;
+        List<ConfigData.MultiTargetPartData> prtConfigs = mtConfig.parts;
 
         MultiTargetEditor.UpdateParts(mtb, prtConfigs.ToArray());
     }

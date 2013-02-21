@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -23,6 +23,8 @@ public class DataSetLoadEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        EditorGUIUtility.LookLikeInspector();
+
         DrawDefaultInspector();
 
         DataSetLoadBehaviour dslb = (DataSetLoadBehaviour)target;
@@ -38,9 +40,7 @@ public class DataSetLoadEditor : Editor
         // Fill list with available data sets.
         ConfigDataManager.Instance.GetConfigDataNames(dataSetList, false);
 
-        DrawDataSetToActivate(dslb, dataSetList);
-
-        DrawDataSetsToLoad(dslb, dataSetList);
+        DrawDataSets(dslb, dataSetList);
 
         if (GUI.changed)
         {
@@ -65,12 +65,9 @@ public class DataSetLoadEditor : Editor
 
         foreach (DataSetLoadBehaviour dslb in dslbs)
         {
-            // Clear the dataset to activate if the dataset no longer exists:
-            if ((dslb.DataSetToActivate != null) &&
-                (System.Array.Find(dataSetList, s => s.Equals(dslb.DataSetToActivate)) == null))
-            {   
-                dslb.DataSetToActivate = null;
-            }
+            // Clear any datasets to activate if they no longer exists:
+            dslb.mDataSetsToActivate.RemoveAll(s => (System.Array.Find(
+                dataSetList, str => str.Equals(s)) == null));
 
             // Clear any datasets to load if they no longer exists:
             dslb.mDataSetsToLoad.RemoveAll(s => (System.Array.Find(
@@ -83,45 +80,47 @@ public class DataSetLoadEditor : Editor
 
     #region PRIVATE_METHODS
 
-    // Draws a drop down list to choose a data set to activate.
-    private void DrawDataSetToActivate(DataSetLoadBehaviour dslb, string[] dataSetList)
-    {
-        string[] dataSetListDropDownList = new string[dataSetList.Length + 1];
-        dataSetListDropDownList[0] = "None";
-        dataSetList.CopyTo(dataSetListDropDownList, 1);
-
-        int currentDataSetIndex = QCARUtilities.GetIndexFromString(dslb.DataSetToActivate, dataSetListDropDownList);
-        if (currentDataSetIndex < 0)
-            currentDataSetIndex = 0;
-
-        int newDataSetIndex = EditorGUILayout.Popup("Activate Data Set",
-                                                    currentDataSetIndex,
-                                                    dataSetListDropDownList);
-        if (newDataSetIndex < 1)
-            dslb.DataSetToActivate = null;
-        else
-        {
-            dslb.DataSetToActivate = dataSetListDropDownList[newDataSetIndex];
-        }
-    }
-
-
     // Draws check boxes for all data sets to choose to load them.
-    private void DrawDataSetsToLoad(DataSetLoadBehaviour dslb, string[] dataSetList)
+    private void DrawDataSets(DataSetLoadBehaviour dslb, string[] dataSetList)
     {
         foreach (string dataSet in dataSetList)
         {
-            bool loadDataSet = dslb.mDataSetsToLoad.Contains(dataSet);
+            bool prevLoadDataSet = dslb.mDataSetsToLoad.Contains(dataSet);
+            bool prevActivateDataSet = dslb.mDataSetsToActivate.Contains(dataSet);
 
+            bool nowLoadDataSet = EditorGUILayout.Toggle("Load Data Set " + dataSet, prevLoadDataSet);
+            bool nowActivateDataSet = false;
+            if (nowLoadDataSet)
+                nowActivateDataSet = EditorGUILayout.Toggle("                     Activate", prevActivateDataSet);
+
+            if (dataSet != dataSetList[dataSetList.Length - 1])
+            {
+                EditorGUILayout.Separator();
+                EditorGUILayout.Separator();
+            }
+
+            // LOAD
             // Remove data sets that are being unchecked.
-            if (loadDataSet && (!EditorGUILayout.Toggle("Load Data Set " + dataSet, loadDataSet)))
+            if (prevLoadDataSet && (!nowLoadDataSet))
             {
                 dslb.mDataSetsToLoad.Remove(dataSet);
             }
             // Add data sets that are being checked.
-            else if ((!loadDataSet) && EditorGUILayout.Toggle("Load Data Set " + dataSet, loadDataSet))
+            else if ((!prevLoadDataSet) && nowLoadDataSet)
             {
                 dslb.mDataSetsToLoad.Add(dataSet);
+            }
+
+            // ACTIVATE
+            // Remove data sets that are being unchecked.
+            if (prevActivateDataSet && (!nowActivateDataSet))
+            {
+                dslb.mDataSetsToActivate.Remove(dataSet);
+            }
+            // Add data sets that are being checked.
+            else if ((!prevActivateDataSet) && nowActivateDataSet)
+            {
+                dslb.mDataSetsToActivate.Add(dataSet);
             }
         }
     }

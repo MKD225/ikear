@@ -1,12 +1,14 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-// Helper behaviour used to hide augmented objects behind the video background.
+/// <summary>
+/// Helper behaviour used to hide augmented objects behind the video background.
+/// </summary>
 public class MaskOutBehaviour : MonoBehaviour
 {
 

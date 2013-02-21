@@ -1,28 +1,26 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-// A trackable behaviour for representing rectangular markers.
-public class MarkerBehaviour : TrackableBehaviour
+/// <summary>
+/// This class serves both as an augmentation definition for a Marker in the editor
+/// as well as a tracked marker result at runtime
+/// </summary>
+public class MarkerBehaviour : TrackableBehaviour, IEditorMarkerBehaviour
 {
 
     #region PROPERTIES
 
-    // The marker ID (as opposed to the trackable's ID)
-    public int MarkerID
+    /// <summary>
+    /// The Marker that this MarkerBehaviour augments
+    /// </summary>
+    public Marker Marker
     {
-        get
-        {
-            return mMarkerID;
-        }
-        set
-        {
-            mMarkerID = value;
-        }
+        get { return mMarker; }
     }
 
     #endregion // PROPERTIES
@@ -34,6 +32,8 @@ public class MarkerBehaviour : TrackableBehaviour
     [SerializeField]
     [HideInInspector]
     private int mMarkerID;
+
+    private Marker mMarker;
     
     #endregion // PRIVATE_MEMBER_VARIABLES
 
@@ -43,8 +43,6 @@ public class MarkerBehaviour : TrackableBehaviour
 
     public MarkerBehaviour()
     {
-        // Remove as soon as this is solved by type
-        mTrackableType = TrackableType.MARKER;
         mMarkerID = -1;
     }
 
@@ -52,31 +50,41 @@ public class MarkerBehaviour : TrackableBehaviour
 
 
 
-    #region PUBLIC_METHODS
+    #region PROTECTED_METHODS
 
-    // Returns the size of this target in scene units:
-    public Vector2 GetSize()
+    /// <summary>
+    /// This method disconnects the TrackableBehaviour from it's associated trackable.
+    /// Use it only if you know what you are doing - e.g. when you want to destroy a trackable, but reuse the TrackableBehaviour.
+    /// </summary>
+    protected override void InternalUnregisterTrackable()
     {
-        return new Vector2(transform.localScale.x, transform.localScale.y);
+        mTrackable = mMarker = null;
     }
 
+    #endregion // PROTECTED_METHODS
 
-    // Scales the Trackable uniformly
-    public override bool CorrectScale()
+
+
+    #region PROTECTED_METHODS
+
+    /// <summary>
+    /// Scales the Trackable uniformly
+    /// </summary>
+    protected override bool CorrectScaleImpl()
     {
         bool scaleChanged = false;
 
         for (int i = 0; i < 3; ++i)
         {
             // Force uniform scale:
-            if (this.transform.localScale[i] != this.mPreviousScale[i])
+            if (this.transform.localScale[i] != mPreviousScale[i])
             {
                 this.transform.localScale =
                     new Vector3(this.transform.localScale[i],
                                 this.transform.localScale[i],
                                 this.transform.localScale[i]);
 
-                this.mPreviousScale = this.transform.localScale;
+                mPreviousScale = this.transform.localScale;
                 scaleChanged = true;
                 break;
             }
@@ -85,5 +93,38 @@ public class MarkerBehaviour : TrackableBehaviour
         return scaleChanged;
     }
 
-    #endregion // PUBLIC_METHODS
+    #endregion // PROTECTED_METHODS
+
+
+
+    #region EDITOR_INTERFACE_IMPLEMENTATION
+
+    // The marker ID (as opposed to the trackable's ID)
+    int IEditorMarkerBehaviour.MarkerID
+    {
+        get
+        {
+            return mMarkerID;
+        }
+    }
+
+    // sets the marker ID (not allowed at runtime)
+    bool IEditorMarkerBehaviour.SetMarkerID(int markerID)
+    {
+        if (mTrackable == null)
+        {
+            mMarkerID = markerID;
+            return true;
+        }
+        return false;
+    }
+
+    // Initializes the MarkerBehaviour with the Marker object. 
+    void IEditorMarkerBehaviour.InitializeMarker(Marker marker)
+    {
+        mTrackable = mMarker = marker;
+    }
+
+    #endregion // EDITOR_INTERFACE_IMPLEMENTATION
+
 }

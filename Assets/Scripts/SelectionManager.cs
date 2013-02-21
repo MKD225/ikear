@@ -23,7 +23,7 @@ public class SelectionManager : MonoBehaviour
 		changedSelected = false;
 		changedOnMouse = false;
 		mouseon = giveCastTarget ();
-		
+		System.Console.WriteLine("BIATCH");
 		//if mouse clicked -> select current rayhit 
 		if (Input.GetMouseButtonDown (0)) {
 			if (mouseon != null && selected != mouseon) {
@@ -112,7 +112,7 @@ public class SelectionManager : MonoBehaviour
 	{
 		RaycastHit hit = new RaycastHit ();
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-		if (Physics.Raycast (ray, out hit, 100)) {
+		if (Physics.Raycast (ray, out hit, 1500)) {
 			return hit.collider.gameObject;	
 		}
 		return null;

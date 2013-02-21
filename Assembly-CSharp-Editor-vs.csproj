@@ -5,7 +5,7 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{AFC3C120-FD95-3BE1-FD46-4EA929D11E34}</ProjectGuid>
+	<ProjectGuid>{6949D08A-E0B7-CF19-8F11-EB19824B9DE1}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_3_5_7;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_WEBPLAYER;ENABLE_GENERICS;ENABLE_DUCK_TYPING;ENABLE_TERRAIN;ENABLE_MOVIES;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_SUBSTANCE</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_2;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_STANDALONE_WIN;ENABLE_GENERICS;ENABLE_DUCK_TYPING;ENABLE_TERRAIN;ENABLE_MOVIES;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_SUBSTANCE</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -44,7 +44,10 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Editor\QCAR\CloudRecoScripts\CloudRecoEventHandlerEditor.cs" />
+     <Compile Include="Assets\Editor\QCAR\SampleImport\SampleImport.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\AccessorFactory.cs" />
+     <Compile Include="Assets\Editor\QCAR\Scripts\CloudRecoEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\ConfigData.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\ConfigDataManager.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\ConfigParser.cs" />
@@ -59,19 +62,29 @@
      <Compile Include="Assets\Editor\QCAR\Scripts\QCARHelpMenu.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\QCARUtilities.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\SceneManager.cs" />
+     <Compile Include="Assets\Editor\QCAR\Scripts\SetBGCameraLayerEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\TargetDataPostprocessor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\TrackableAccessor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\TrackerEditor.cs" />
+     <Compile Include="Assets\Editor\QCAR\Scripts\UserDefinedTargetBuilderEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\VirtualButtonEditor.cs" />
-     <None Include="Assets\License_Readme.txt" />
-     <None Include="Assets\license.txt" />
-     <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
-     <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
+     <Compile Include="Assets\Editor\QCAR\Scripts\WebCamEditor.cs" />
+     <None Include="Assets\Qualcomm Augmented Reality\Shaders\RenderVideoBackground.shader" />
+     <None Include="Assets\Shaders\Transparent Vertex Colored Index -1.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+     <None Include="Assets\license.txt" />
+     <None Include="Assets\Editor\QCAR\WebcamProfiles\profiles.xml" />
+     <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
+     <None Include="Assets\Resources\Vuforia_About.txt" />
+     <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
+     <None Include="Assets\Shaders\Transparent Vertex Colored Index -2.shader" />
+     <None Include="Assets\readme.txt" />
+     <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
+     <None Include="Assets\license_3rdpartynotice.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
-      <Project>{14E07B6D-189A-83DC-8BAB-C45D531B6292}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
+      <Project>{C914B82A-4696-CB18-77EE-BB033664AB4F}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

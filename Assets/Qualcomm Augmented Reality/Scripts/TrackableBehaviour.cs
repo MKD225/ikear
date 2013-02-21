@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -8,28 +8,25 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
-// The base class behaviour for all trackable types in QCAR.
-public abstract class TrackableBehaviour : MonoBehaviour
+/// <summary>
+/// The base class for all TrackableBehaviours in Vuforia
+/// This class serves both as an augmentation definition for a Trackable in the editor
+/// as well as a tracked Trackable result at runtime
+/// </summary>
+public abstract class TrackableBehaviour : MonoBehaviour, IEditorTrackableBehaviour
 {    
     #region NESTED
 
-    // The supported trackable types.
-    public enum TrackableType
-    {
-        UNKNOWN_TYPE,       ///< A trackable of unknown type
-        IMAGE_TARGET,       ///< A trackable of ImageTarget type
-        MULTI_TARGET,       ///< A trackable of MultiTarget type
-        MARKER,             ///< A trackable of Marker type
-    }
-
-    // The tracking status of the trackable.
+    /// <summary>
+    /// The tracking status of the TrackableBehaviour.
+    /// </summary>
     public enum Status
     {
-        UNKNOWN,
-        UNDEFINED,
-        NOT_FOUND,
-        DETECTED,
-        TRACKED
+        NOT_FOUND = -1,
+        UNKNOWN = 0,            ///< The state of the TrackableResult is unknown
+        UNDEFINED = 1,          ///< The state of the TrackableResult is not defined
+        DETECTED = 2,           ///< The TrackableResult was detected
+        TRACKED = 3             ///< The TrackableResult was tracked
     }
 
     #endregion //NESTED
@@ -38,42 +35,34 @@ public abstract class TrackableBehaviour : MonoBehaviour
 
     #region PROPERTIES
 
-    // The name of the trackable.
+    /// <summary>
+    /// The tracking status of the TrackableBehaviour
+    /// </summary>
+    public Status CurrentStatus
+    {
+        get { return mStatus; }
+    }
+
+    /// <summary>
+    /// The Trackable created at runtime that is augmented by this TrackableBehaviour
+    /// </summary>
+    public Trackable Trackable
+    {
+        get { return mTrackable; }
+    }
+
+    /// <summary>
+    /// The name of the Trackable.
+    /// </summary>
     public string TrackableName
     {
         get
         {
             return mTrackableName;
         }
-
-        set
-        {
-            mTrackableName = value;
-        }
-    }
-
-    // The unique id for all trackable objects.
-    public int TrackableID
-    {
-        get { return mTrackableID; }
-    }
-
-    // The tracking status of the trackable.
-    public Status CurrentStatus
-    {
-        get { return mStatus; }
     }
 
     #endregion // PROPERTIES
-
-
-
-    #region PUBLIC_MEMBER_VARIABLES
-
-    [HideInInspector]
-    public TrackableType mTrackableType = TrackableType.IMAGE_TARGET;
-    
-    #endregion // PUBLIC_MEMBER_VARIABLES
 
 
 
@@ -85,10 +74,18 @@ public abstract class TrackableBehaviour : MonoBehaviour
 
     [SerializeField]
     [HideInInspector]
-    public Vector3 mPreviousScale = Vector3.one;
+    protected Vector3 mPreviousScale = Vector3.zero;
 
-    protected int mTrackableID = -1;
+    [SerializeField]
+    [HideInInspector]
+    protected bool mPreserveChildSize = false;
+
+    [SerializeField]
+    [HideInInspector]
+    protected bool mInitializedInEditor = false;
+
     protected Status mStatus = Status.UNKNOWN;
+    protected Trackable mTrackable;
     
     #endregion // PROTECTED_MEMBER_VARIABLES
 
@@ -103,23 +100,13 @@ public abstract class TrackableBehaviour : MonoBehaviour
 
 
 
-    #region EDITOR_ONLY_MEMBER_VARIABLES
-
-    [HideInInspector]
-    public bool mPreserveChildSize = false;
-
-    [HideInInspector]
-    public bool mInitializedInEditor = false;
-
-    #endregion // EDITOR_ONLY_MEMBER_VARIABLES
-
-
-
     #region PUBLIC_METHODS
 
-    // This method registers a new Tracker event handler at the Tracker.
-    // These handlers are called as soon as ALL Trackables have been updated
-    // in this frame.
+    /// <summary>
+    /// This method registers a new Tracker event handler at the Tracker.
+    /// These handlers are called as soon as ALL Trackables have been updated
+    /// in this frame.
+    /// </summary>
     public void RegisterTrackableEventHandler(
                                 ITrackableEventHandler trackableEventHandler)
     {
@@ -127,8 +114,10 @@ public abstract class TrackableBehaviour : MonoBehaviour
     }
 
 
-    // This method unregisters a Tracker event handler.
-    // Returns "false" if event handler does not exist.
+    /// <summary>
+    /// This method unregisters a Tracker event handler.
+    /// Returns "false" if event handler does not exist.
+    /// </summary>
     public bool UnregisterTrackableEventHandler(
                                 ITrackableEventHandler trackableEventHandler)
     {
@@ -136,7 +125,9 @@ public abstract class TrackableBehaviour : MonoBehaviour
     }
 
 
-    // Is triggered by the TrackerBehavior after it has updated.
+    /// <summary>
+    /// Is triggered by the TrackerBehavior after it has updated.
+    /// </summary>
     public void OnTrackerUpdate(Status newStatus)
     {
         // Update status:
@@ -152,22 +143,19 @@ public abstract class TrackableBehaviour : MonoBehaviour
         }
     }
 
-
-    // Initializes the trackable ID. Should only be called by the
-    // QCARBehaviour on initialization.
-    public void InitializeID(int id)
-    {
-        mTrackableID = id;
-    }
-
-
-    // Scales Trackable uniformly
-    public virtual bool CorrectScale()
-    {
-        return false;
-    }
-
     #endregion // PUBLIC_METHODS
+
+
+
+    #region PROTECTED_METHODS
+
+    /// <summary>
+    /// This method disconnects the TrackableBehaviour from it's associated trackable.
+    /// Use it only if you know what you are doing - e.g. when you want to destroy a trackable, but reuse the TrackableBehaviour.
+    /// </summary>
+    protected abstract void InternalUnregisterTrackable();
+
+    #endregion // PROTECTED_METHODS
 
 
 
@@ -175,14 +163,14 @@ public abstract class TrackableBehaviour : MonoBehaviour
 
     // Overriding standard Unity MonoBehaviour methods.
 
-    public void Start()
+    void Start()
     {
         // Note: Empty, but this forces the enabled checkbox in the editor
         // to become visible.
     }
 
 
-    public void OnDisable()
+    void OnDisable()
     {
         // Update status:
         Status prevStatus = mStatus;
@@ -198,4 +186,96 @@ public abstract class TrackableBehaviour : MonoBehaviour
     }
 
     #endregion // UNITY_MONOBEHAVIOUR_METHODS
+
+
+
+    #region EDITOR_INTERFACE_IMPLEMENTATION
+
+    // Scales Trackable uniformly
+    bool IEditorTrackableBehaviour.CorrectScale()
+    {
+        return CorrectScaleImpl();
+    }
+
+    protected virtual bool CorrectScaleImpl()
+    {
+        return false;
+    }
+
+    // Sets the name of the trackable before it's created
+    // can be used from the editor or during runtime for newly created TrackableBehaviours
+    bool IEditorTrackableBehaviour.SetNameForTrackable(string name)
+    {
+        // using this method is only allowed
+        if (mTrackable == null)
+        {
+            mTrackableName = name;
+            return true;
+        }
+        return false;
+    }
+
+    Vector3 IEditorTrackableBehaviour.PreviousScale
+    {
+        get { return mPreviousScale; }
+    }
+
+    // Sets the PreviousScale to a given value
+    // can be used from the editor or during runtime for newly created TrackableBehaviours
+    bool IEditorTrackableBehaviour.SetPreviousScale(Vector3 previousScale)
+    {
+        if (Trackable == null)
+        {
+            mPreviousScale = previousScale;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool IEditorTrackableBehaviour.PreserveChildSize
+    {
+        get { return mPreserveChildSize; }
+    }
+
+    // Sets the PreserveChildSize flag
+    // can be used from the editor or during runtime for newly created TrackableBehaviours
+    bool IEditorTrackableBehaviour.SetPreserveChildSize(bool preserveChildSize)
+    {
+        if (Trackable == null)
+        {
+            mPreserveChildSize = preserveChildSize;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool IEditorTrackableBehaviour.InitializedInEditor
+    {
+        get { return mInitializedInEditor; }
+    }
+
+    // used to remember if the Trackable behaviour has been initialized in the editor
+    // can be used from the editor or during runtime for newly created TrackableBehaviours
+    bool IEditorTrackableBehaviour.SetInitializedInEditor(bool initializedInEditor)
+    {
+        if (Trackable == null)
+        {
+            mInitializedInEditor = initializedInEditor;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// This method disconnects the TrackableBehaviour from it's associated trackable.
+    /// Use it only if you know what you are doing - e.g. when you want to destroy a trackable, but reuse the TrackableBehaviour.
+    /// </summary>
+    void IEditorTrackableBehaviour.UnregisterTrackable()
+    {
+        InternalUnregisterTrackable();
+    }
+
+    #endregion // EDITOR_INTERFACE_IMPLEMENTATION
 }

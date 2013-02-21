@@ -1,30 +1,26 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
+using System.Collections.Generic;
 using UnityEngine;
 
-// A trackable behaviour to represent a flat natural feature target.
-public class ImageTargetBehaviour : DataSetTrackableBehaviour
+/// <summary>
+/// This class serves both as an augmentation definition for an ImageTarget in the editor
+/// as well as a tracked image target result at runtime
+/// </summary>
+public class ImageTargetBehaviour : DataSetTrackableBehaviour, IEditorImageTargetBehaviour
 {
-
     #region PROPERTIES
 
-    // The aspect ratio of the target.
-    public float AspectRatio
+    /// <summary>
+    /// The image target that this ImageTargetBehaviour augments
+    /// </summary>
+    public ImageTarget ImageTarget
     {
-        get
-        {
-            return mAspectRatio;
-        }
-
-        set
-        {
-            // Only to be called by DataSet.CreateImageTarget
-            mAspectRatio = value;
-        }
+        get { return mImageTarget; }
     }
 
     #endregion // PROPERTIES
@@ -37,6 +33,13 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
     [HideInInspector]
     private float mAspectRatio;
 
+    [SerializeField]
+    [HideInInspector]
+    private ImageTargetType mImageTargetType;
+
+    private ImageTarget mImageTarget;
+    private Dictionary<int, VirtualButtonBehaviour> mVirtualButtonBehaviours;
+
     #endregion // PRIVATE_MEMBER_VARIABLES
 
 
@@ -45,7 +48,6 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
 
     public ImageTargetBehaviour()
     {
-        mTrackableType = TrackableType.IMAGE_TARGET;
         mAspectRatio = 1.0f;
     }
 
@@ -53,30 +55,54 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
 
 
 
-    #region PUBLIC_METHODS
+    #region PROTECTED_METHODS
 
-    // Returns the Virtual Button with the given name.
-    // Returns null if the button cannot be found.
-    public VirtualButtonBehaviour GetVirtualButton(string name)
+
+    /// <summary>
+    /// Scales the Trackable uniformly
+    /// </summary>
+    protected override bool CorrectScaleImpl()
     {
-        VirtualButtonBehaviour[] vbs =
-                            GetComponentsInChildren<VirtualButtonBehaviour>();
+        bool scaleChanged = false;
 
-        for (int i = 0; i < vbs.Length; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            if (vbs[i].VirtualButtonName.Equals(name))
+            // Force uniform scale:
+            if (this.transform.localScale[i] != mPreviousScale[i])
             {
-                return vbs[i];
+                this.transform.localScale =
+                    new Vector3(this.transform.localScale[i],
+                                this.transform.localScale[i],
+                                this.transform.localScale[i]);
+
+                mPreviousScale = this.transform.localScale;
+                scaleChanged = true;
+                break;
             }
         }
 
-        // Not found:
-        return null;
+        return scaleChanged;
     }
 
+    /// <summary>
+    /// This method disconnects the TrackableBehaviour from it's associated trackable.
+    /// Use it only if you know what you are doing - e.g. when you want to destroy a trackable, but reuse the TrackableBehaviour.
+    /// </summary>
+    protected override void InternalUnregisterTrackable()
+    {
+        mTrackable = mImageTarget = null;
+    }
 
-    // This method creates a Virtual Button and adds it to this Image Target as
-    // a direct child.
+    #endregion // PROTECTED_METHODS
+
+
+
+    #region PUBLIC_METHODS
+
+    /// <summary>
+    /// This method creates a Virtual Button and adds it to this Image Target as
+    /// a direct child.
+    /// </summary>
     public VirtualButtonBehaviour CreateVirtualButton(string vbName,
                                                       Vector2 position,
                                                       Vector2 size)
@@ -89,32 +115,17 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
         virtualButtonObject.transform.parent = this.transform;
 
         // Set Virtual Button attributes
-        newVBB.InitializeName(vbName);
-        newVBB.transform.localScale = new Vector3(size.x, 1.0f, size.y);
-        newVBB.transform.localPosition = new Vector3(position.x, 1.0f,
+        IEditorVirtualButtonBehaviour newEditorVBB = newVBB;
+        newEditorVBB.SetVirtualButtonName(vbName);
+        newEditorVBB.transform.localScale = new Vector3(size.x, 1.0f, size.y);
+        newEditorVBB.transform.localPosition = new Vector3(position.x, 1.0f,
                                                         position.y);
 
         // Only register the virtual button with the qcarBehaviour at run-time:
-        if (!Application.isEditor)
+        if (Application.isPlaying)
         {
-            ImageTracker imageTracker = (ImageTracker)
-                TrackerManager.Instance.GetTracker(Tracker.Type.IMAGE_TRACKER);
-            int numDataSets = imageTracker.GetNumDataSets();
-
-            for (int i = 0; i < numDataSets; ++i)
-            {
-                DataSet dataSet = imageTracker.GetDataSet(i);
-                if (References(dataSet))
-                {
-                    if (!dataSet.RegisterVirtualButton(newVBB,
-                                                       this.TrackableName))
-                    {
-                        Debug.LogError("Could not register Virtual Button.");
-                        GameObject.Destroy(virtualButtonObject);
-                        return null;
-                    }
-                }
-            }
+            if (!CreateNewVirtualButtonFromBehaviour(newVBB)) 
+                return null;
         }
         
         // If we manually register the button it should be unregistered if the
@@ -125,9 +136,11 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
     }
 
 
-    // This methods adds the Virtual Button as a child of "immediateParent".
-    // Returns null if "immediateParent" is not an Image Target or a child of an
-    // Image Target.
+    /// <summary>
+    /// This methods adds the Virtual Button as a child of "immediateParent".
+    /// Returns null if "immediateParent" is not an Image Target or a child of an
+    /// Image Target.
+    /// </summary>
     public static VirtualButtonBehaviour CreateVirtualButton(string vbName,
                                                   Vector2 localScale,
                                                   GameObject immediateParent)
@@ -140,7 +153,7 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
         ImageTargetBehaviour parentImageTarget =
             rootParent.GetComponentInChildren<ImageTargetBehaviour>();
 
-        if (parentImageTarget == null)
+        if (parentImageTarget == null || parentImageTarget.ImageTarget == null)
         {
             Debug.LogError("Could not create Virtual Button. " +
                            "immediateParent\"immediateParent\" object is not " +
@@ -153,34 +166,15 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
         virtualButtonObject.transform.parent = immediateParent.transform;
 
         // Set Virtual Button attributes
-        newVBB.InitializeName(vbName);
-        newVBB.transform.localScale = new Vector3(localScale[0], 1.0f, localScale[1]); 
+        IEditorVirtualButtonBehaviour newEditorVBB = newVBB;
+        newEditorVBB.SetVirtualButtonName(vbName);
+        newEditorVBB.transform.localScale = new Vector3(localScale[0], 1.0f, localScale[1]); 
 
-        ImageTracker imageTracker = (ImageTracker)
-            TrackerManager.Instance.GetTracker(Tracker.Type.IMAGE_TRACKER);
-        int numDataSets = imageTracker.GetNumDataSets();
-
-        bool registerSuccess = false;
-
-        for (int i = 0; i < numDataSets; ++i)
+        // Only register the virtual button with the qcarBehaviour at run-time:
+        if (Application.isPlaying)
         {
-            DataSet dataSet = imageTracker.GetDataSet(i);
-            if (parentImageTarget.References(dataSet))
-            {
-                registerSuccess = dataSet.RegisterVirtualButton(newVBB,
-                    parentImageTarget.TrackableName);
-            }
-        }
-
-        if (!registerSuccess)
-        {
-            Debug.LogError("Could not register Virtual Button.");
-            GameObject.Destroy(virtualButtonObject);
-            return null;
-        }
-        else
-        {
-            Debug.Log("Registered Virtual Button successfully.");
+            if (!parentImageTarget.CreateNewVirtualButtonFromBehaviour(newVBB))
+                return null;
         }
 
         // If we manually register the button it should be unregistered if the
@@ -190,27 +184,38 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
         return newVBB;
     }
 
+    /// <summary>
+    ///  Returns the virtual button behaviours for this imageTargetBehaviour
+    /// </summary>
+    public IEnumerable<VirtualButtonBehaviour> GetVirtualButtonBehaviours()
+    {
+        return mVirtualButtonBehaviours.Values;
+    }
 
-    // Destroys the virtual button with the given name.
+
+    /// <summary>
+    /// Destroys the virtual button with the given name.
+    /// </summary>
     public void DestroyVirtualButton(string vbName)
     {
-        VirtualButtonBehaviour[] virtualButtons =
-            this.GetComponentsInChildren<VirtualButtonBehaviour>();
-
-        foreach (VirtualButtonBehaviour vb in virtualButtons)
+        List<VirtualButtonBehaviour> virtualButtonBehaviours = new List<VirtualButtonBehaviour>(mVirtualButtonBehaviours.Values);
+        foreach (VirtualButtonBehaviour vb in virtualButtonBehaviours)
         {
             if (vb.VirtualButtonName == vbName)
             {
+                mVirtualButtonBehaviours.Remove(vb.VirtualButton.ID);
                 // Unregister pre-existing buttons when explicitly destroyed
                 vb.UnregisterOnDestroy = true;
-                GameObject.Destroy(vb.gameObject);
+                Destroy(vb.gameObject);
                 return;
             }
         }
     }
 
 
-    // Returns the size of this target in scene units:
+    /// <summary>
+    /// Returns the size of this target in scene units
+    /// </summary>
     public Vector2 GetSize()
     {
         if (mAspectRatio <= 1.0f)
@@ -225,30 +230,229 @@ public class ImageTargetBehaviour : DataSetTrackableBehaviour
         }
     }
 
+    #endregion // PUBLIC_METHODS
 
-    // Scales the Trackable uniformly
-    public override bool CorrectScale()
+
+
+    #region EDITOR_INTERFACE_IMPLEMENTATION
+
+    // The aspect ratio of the target.
+    float IEditorImageTargetBehaviour.AspectRatio
     {
-        bool scaleChanged = false;
-
-        for (int i = 0; i < 3; ++i)
+        get
         {
-            // Force uniform scale:
-            if (this.transform.localScale[i] != this.mPreviousScale[i])
-            {
-                this.transform.localScale =
-                    new Vector3(this.transform.localScale[i],
-                                this.transform.localScale[i],
-                                this.transform.localScale[i]);
+            return mAspectRatio;
+        }
+    }
 
-                this.mPreviousScale = this.transform.localScale;
-                scaleChanged = true;
-                break;
+    // If the image target is a user created target or a static one from a dataset
+    ImageTargetType IEditorImageTargetBehaviour.ImageTargetType
+    {
+        get
+        {
+            return mImageTargetType;
+        }
+    }
+
+    // sets the Aspect Ratio (only in editor mode)
+    bool IEditorImageTargetBehaviour.SetAspectRatio(float aspectRatio)
+    {
+        if (mTrackable == null)
+        {
+            mAspectRatio = aspectRatio;
+            return true;
+        }
+        return false;
+    }
+
+    // sets the ImageTargetType (only in editor mode)
+    bool IEditorImageTargetBehaviour.SetImageTargetType(ImageTargetType imageTargetType)
+    {
+        if (mTrackable == null)
+        {
+            mImageTargetType = imageTargetType;
+            return true;
+        }
+        return false;
+    }
+
+    void IEditorImageTargetBehaviour.InitializeImageTarget(ImageTarget imageTarget)
+    {
+        mTrackable = mImageTarget = imageTarget;
+        mVirtualButtonBehaviours = new Dictionary<int, VirtualButtonBehaviour>();
+
+        // do not change the aspect ratio of user defined targets, these are set by the algorithm internally
+        if (imageTarget.ImageTargetType == ImageTargetType.PREDEFINED)
+        {
+            // Handle any changes to the image target in the scene
+            // that are not reflected in the config file
+            Vector2 imgTargetUnitySize = GetSize();
+
+            imageTarget.SetSize(imgTargetUnitySize);
+        }
+        else // instead, set the aspect of the unity object to the value of the user defined target
+        {
+            Vector2 udtSize = imageTarget.GetSize();
+
+            // set the size of the target to the value returned from cloud reco:
+            transform.localScale =
+                new Vector3(udtSize.x,
+                            udtSize.x,
+                            udtSize.x);
+
+            IEditorImageTargetBehaviour editorThis = this;
+            editorThis.CorrectScale();
+
+            editorThis.SetAspectRatio(udtSize.y / udtSize.x);
+        }
+    }
+
+
+    /// <summary>
+    /// Associates existing virtual button behaviour with virtualbuttons and creates new VirtualButtons if necessary
+    /// </summary>
+    void IEditorImageTargetBehaviour.AssociateExistingVirtualButtonBehaviour(VirtualButtonBehaviour virtualButtonBehaviour)
+    {
+        VirtualButton virtualButton = mImageTarget.GetVirtualButtonByName(virtualButtonBehaviour.VirtualButtonName);
+
+        if (virtualButton == null)
+        {
+            Vector2 leftTop, rightBottom;
+            virtualButtonBehaviour.CalculateButtonArea(out leftTop, out rightBottom);
+            VirtualButton.RectangleData area = new VirtualButton.RectangleData
+                                                {
+                                                    leftTopX = leftTop.x,
+                                                    leftTopY = leftTop.y,
+                                                    rightBottomX = rightBottom.x,
+                                                    rightBottomY = rightBottom.y
+                                                };
+            virtualButton = mImageTarget.CreateVirtualButton(virtualButtonBehaviour.VirtualButtonName, area);
+
+            // Create the virtual button
+            if (virtualButton != null)
+            {
+                Debug.Log("Successfully created virtual button " +
+                          virtualButtonBehaviour.VirtualButtonName +
+                          " at startup");
+
+                virtualButtonBehaviour.UnregisterOnDestroy = true;
+            }
+            else
+            {
+                Debug.LogError("Failed to create virtual button " +
+                               virtualButtonBehaviour.VirtualButtonName +
+                               " at startup");
             }
         }
 
-        return scaleChanged;
+        if (virtualButton != null)
+        {
+            //  Duplicate check:
+            if (!mVirtualButtonBehaviours.ContainsKey(virtualButton.ID))
+            {
+                // OK:
+                IEditorVirtualButtonBehaviour editorVirtualButtonBehaviour = virtualButtonBehaviour;
+                editorVirtualButtonBehaviour.InitializeVirtualButton(virtualButton);
+                mVirtualButtonBehaviours.Add(virtualButton.ID, virtualButtonBehaviour);
+
+                Debug.Log("Found VirtualButton named " +
+                        virtualButtonBehaviour.VirtualButton.Name + " with id " +
+                        virtualButtonBehaviour.VirtualButton.ID);
+
+                // Handle any changes to the virtual button in the scene
+                // that are not reflected in the config file
+                virtualButtonBehaviour.UpdatePose();
+                if (!virtualButtonBehaviour.UpdateAreaRectangle() ||
+                    !virtualButtonBehaviour.UpdateSensitivity())
+                {
+                    Debug.LogError("Failed to update virtual button " +
+                                   virtualButtonBehaviour.VirtualButton.Name +
+                                   " at startup");
+                }
+                else
+                {
+                    Debug.Log("Updated virtual button " +
+                              virtualButtonBehaviour.VirtualButton.Name +
+                              " at startup");
+                }
+            }
+        }
     }
 
-    #endregion // PUBLIC_METHODS
+
+    void IEditorImageTargetBehaviour.CreateMissingVirtualButtonBehaviours()
+    {
+        foreach(VirtualButton virtualButton in mImageTarget.GetVirtualButtons())
+            CreateVirtualButtonFromNative(virtualButton);
+    }
+
+    bool IEditorImageTargetBehaviour.TryGetVirtualButtonBehaviourByID(int id, out VirtualButtonBehaviour virtualButtonBehaviour)
+    {
+        return mVirtualButtonBehaviours.TryGetValue(id, out virtualButtonBehaviour);
+    }
+
+    #endregion // EDITOR_INTERFACE_IMPLEMENTATION
+
+
+    #region PRIVATE_METHODS
+    
+    // creates the specified VirtualButtonBehaviour for this ImageTarget
+    private void CreateVirtualButtonFromNative(VirtualButton virtualButton)
+    {
+        GameObject virtualButtonObject = new GameObject(virtualButton.Name);
+        VirtualButtonBehaviour newVBB =
+            virtualButtonObject.AddComponent<VirtualButtonBehaviour>();
+
+        // We need to set the Image Target as a parent BEFORE we set the size
+        // of the Virtual Button.
+        newVBB.transform.parent = transform;
+
+        IEditorVirtualButtonBehaviour newEditorVBB = newVBB;
+
+        Debug.Log("Creating Virtual Button with values: " +
+                  "\n ID:           " + virtualButton.ID +
+                  "\n Name:         " + virtualButton.Name +
+                  "\n Rectangle:    " + virtualButton.Area.leftTopX + "," +
+                                        virtualButton.Area.leftTopY + "," +
+                                        virtualButton.Area.rightBottomX + "," +
+                                        virtualButton.Area.rightBottomY);
+
+        newEditorVBB.SetVirtualButtonName(virtualButton.Name);
+        newEditorVBB.SetPosAndScaleFromButtonArea(new Vector2(virtualButton.Area.leftTopX, virtualButton.Area.leftTopY),
+                                                  new Vector2(virtualButton.Area.rightBottomX, virtualButton.Area.rightBottomY));
+        // This button is part of a data set and should therefore not be
+        // unregistered in native only because the Unity object is destroyed.
+        newEditorVBB.UnregisterOnDestroy = false;
+        newEditorVBB.InitializeVirtualButton(virtualButton);
+        mVirtualButtonBehaviours.Add(virtualButton.ID, newVBB);
+    }
+
+    private bool CreateNewVirtualButtonFromBehaviour(VirtualButtonBehaviour newVBB)
+    {
+        // Calculate the button area:
+        Vector2 leftTop, rightBottom;
+        newVBB.CalculateButtonArea(out leftTop, out rightBottom);
+        VirtualButton.RectangleData area = new VirtualButton.RectangleData
+        {
+            leftTopX = leftTop.x,
+            leftTopY = leftTop.y,
+            rightBottomX = rightBottom.x,
+            rightBottomY = rightBottom.y
+        };
+
+        VirtualButton virtualButton = mImageTarget.CreateVirtualButton(newVBB.VirtualButtonName, area);
+
+        if (virtualButton == null)
+        {
+            Destroy(newVBB.gameObject);
+            return false;
+        }
+
+        IEditorVirtualButtonBehaviour newEditorVBB = newVBB;
+        newEditorVBB.InitializeVirtualButton(virtualButton);
+        mVirtualButtonBehaviours.Add(virtualButton.ID, newVBB);
+        return true;
+    }
+
+    #endregion // PRIVATE_METHODS
 }

@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -16,8 +16,8 @@ public class MultiTargetEditor : Editor
 
     // Updates MultiTarget parts with the values stored in the "prtConfigs"
     // array. Deletes all parts and recreates them.
-    public static void UpdateParts(MultiTargetBehaviour mt,
-                                   ConfigData.MultiTargetPart[] prtConfigs)
+    public static void UpdateParts(IEditorMultiTargetBehaviour mt,
+                                   ConfigData.MultiTargetPartData[] prtConfigs)
     {
         Transform childTargets = mt.transform.Find("ChildTargets");
 
@@ -47,38 +47,40 @@ public class MultiTargetEditor : Editor
         {
             Debug.LogError("Could not update Multi Target parts. A data set with the given name does not exist.");
         }
-
-        int numParts = prtConfigs.Length;
-        for (int i = 0; i < numParts; ++i)
+        else
         {
-            if (!dataSetData.ImageTargetExists(prtConfigs[i].name)/* &&
-                prtConfigs[i].name != QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME*/)
+            int numParts = prtConfigs.Length;
+            for (int i = 0; i < numParts; ++i)
             {
-                Debug.LogError("No Image Target named " + prtConfigs[i].name);
-                return;
+                if (!dataSetData.ImageTargetExists(prtConfigs[i].name)/* &&
+                    prtConfigs[i].name != QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME*/)
+                {
+                    Debug.LogError("No Image Target named " + prtConfigs[i].name);
+                    return;
+                }
+
+                ConfigData.ImageTargetData itConfig;
+                dataSetData.GetImageTarget(prtConfigs[i].name, out itConfig);
+
+                Vector2 size = itConfig.size;
+                Vector3 scale = new Vector3(size.x * 0.1f, 1, size.y * 0.1f);
+
+                GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                plane.name = prtConfigs[i].name;
+                plane.transform.parent = childTargets.transform;
+
+                plane.transform.localPosition = prtConfigs[i].translation;
+                plane.transform.localRotation = prtConfigs[i].rotation;
+                plane.transform.localScale = scale;
+
+                UpdateMaterial(mt, plane);
+
+                plane.hideFlags = HideFlags.NotEditable;
+
+                MaskOutBehaviour script =
+                    (MaskOutBehaviour)plane.AddComponent(typeof(MaskOutBehaviour));
+                script.maskMaterial = maskMaterial;
             }
-
-            ConfigData.ImageTarget itConfig;
-            dataSetData.GetImageTarget(prtConfigs[i].name, out itConfig);
-
-            Vector2 size = itConfig.size;
-            Vector3 scale = new Vector3(size.x * 0.1f, 1, size.y * 0.1f);
-
-            GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            plane.name = prtConfigs[i].name;
-            plane.transform.parent = childTargets.transform;
-
-            plane.transform.localPosition = prtConfigs[i].translation;
-            plane.transform.localRotation = prtConfigs[i].rotation;
-            plane.transform.localScale = scale;
-
-            UpdateMaterial(mt, plane);
-
-            plane.hideFlags = HideFlags.NotEditable;
-
-            MaskOutBehaviour script =
-                (MaskOutBehaviour)plane.AddComponent(typeof(MaskOutBehaviour));
-            script.maskMaterial = maskMaterial;
         }
     }
 
@@ -105,25 +107,27 @@ public class MultiTargetEditor : Editor
             SceneManager.Instance.InitScene();
         }
 
+        IEditorMultiTargetBehaviour editorMtb = mtb;
+
         // Only setup target if it has not been set up previously.
-        if (!mtb.mInitializedInEditor)
+        if (!editorMtb.InitializedInEditor)
         {
-            ConfigData.MultiTarget mtConfig;
+            ConfigData.MultiTargetData mtConfig;
 
             ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
             dataSetData.GetMultiTarget(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME, out mtConfig);
 
-            mtb.DataSetPath = QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME;
-            mtb.TrackableName = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
+            editorMtb.SetDataSetPath(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
+            editorMtb.SetNameForTrackable(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
 
-            List<ConfigData.MultiTargetPart> prtConfigs = mtConfig.parts;
+            List<ConfigData.MultiTargetPartData> prtConfigs = mtConfig.parts;
 
-            UpdateParts(mtb, prtConfigs.ToArray());
-            mtb.mInitializedInEditor = true;
+            UpdateParts(editorMtb, prtConfigs.ToArray());
+            editorMtb.SetInitializedInEditor(true);
         }
 
         // Cache the current scale of the target:
-        mtb.mPreviousScale = mtb.transform.localScale;
+        editorMtb.SetPreviousScale(mtb.transform.localScale);
     }
 
 
@@ -151,10 +155,12 @@ public class MultiTargetEditor : Editor
     // must be defined in the "config.xml" file.
     public override void OnInspectorGUI()
     {
+        EditorGUIUtility.LookLikeInspector();
+
         DrawDefaultInspector();
 
-        MultiTargetBehaviour mtb =
-            (MultiTargetBehaviour)target;
+        MultiTargetBehaviour mtb = (MultiTargetBehaviour)target;
+        IEditorMultiTargetBehaviour editorMtb = mtb;
 
         if (QCARUtilities.GetPrefabType(mtb) ==
             PrefabType.Prefab)
@@ -167,7 +173,7 @@ public class MultiTargetEditor : Editor
             string[] dataSetList = new string[ConfigDataManager.Instance.NumConfigDataObjects];
             ConfigDataManager.Instance.GetConfigDataNames(dataSetList);
             int currentDataSetIndex =
-                QCARUtilities.GetIndexFromString(mtb.DataSetName, dataSetList);
+                QCARUtilities.GetIndexFromString(editorMtb.DataSetName, dataSetList);
 
             // If name is not in array we automatically choose default name;
             if (currentDataSetIndex < 0)
@@ -185,7 +191,7 @@ public class MultiTargetEditor : Editor
             string[] namesList = new string[dataSetData.NumMultiTargets];
             dataSetData.CopyMultiTargetNames(namesList, 0);
             int currentTrackableIndex =
-                QCARUtilities.GetIndexFromString(mtb.TrackableName, namesList);
+                QCARUtilities.GetIndexFromString(editorMtb.TrackableName, namesList);
 
             // If name is not in array we automatically choose default name;
             if (currentTrackableIndex < 0)
@@ -199,13 +205,9 @@ public class MultiTargetEditor : Editor
             {
                 if (newDataSetIndex != currentDataSetIndex || newTrackableIndex != currentTrackableIndex)
                 {
-                    mtb.DataSetPath =
-                        "QCAR/" + dataSetList[newDataSetIndex] + ".xml";
+                    editorMtb.SetDataSetPath("QCAR/" + dataSetList[newDataSetIndex] + ".xml");
 
-                    mtb.DataSetStorageType =
-                        DataSet.StorageType.STORAGE_APPRESOURCE;
-
-                    mtb.TrackableName = namesList[newTrackableIndex];
+                    editorMtb.SetNameForTrackable(namesList[newTrackableIndex]);
                 }
             }
         }
@@ -224,9 +226,9 @@ public class MultiTargetEditor : Editor
 
             // If name has changed we apply the correct values from the config
             // file.
-            TrackableAccessor accessor =
-                AccessorFactory.Create(mtb);
-            accessor.ApplyDataSetProperties();
+            TrackableAccessor accessor = AccessorFactory.Create(mtb);
+            if (accessor != null)
+                accessor.ApplyDataSetProperties();
 
             SceneManager.Instance.SceneUpdated();
         }
@@ -238,7 +240,7 @@ public class MultiTargetEditor : Editor
 
     #region PRIVATE_METHODS
 
-    private static void UpdateMaterial(MultiTargetBehaviour mt, GameObject go)
+    private static void UpdateMaterial(IEditorMultiTargetBehaviour mt, GameObject go)
     {
         // Load reference material
         string referenceMaterialPath =

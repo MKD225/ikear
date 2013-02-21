@@ -1,21 +1,36 @@
 ﻿/*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-public abstract class DataSetTrackableBehaviour : TrackableBehaviour
+/// <summary>
+/// This is the base class for all trackables that are part of a dataset
+/// </summary>
+public abstract class DataSetTrackableBehaviour : TrackableBehaviour, IEditorDataSetTrackableBehaviour
 {
-    #region PROPERTIES
+    #region PROTECTED_MEMBER_VARIABLES
 
-    // The name of the data set the Trackable belongs to.
-    // Please be aware that the data set name is not a unique identifier at runtime!
-    public string DataSetName
+    [SerializeField]
+    [HideInInspector]
+    protected string mDataSetPath = "";
+
+    #endregion // PROTECTED_MEMBER_VARIABLES
+
+
+
+    #region EDITOR_INTERFACE_IMPLEMENTATION
+
+    /// <summary>
+    /// The name of the data set the Trackable belongs to.
+    /// Please be aware that the data set name is not a unique identifier at runtime!
+    /// </summary>
+    string IEditorDataSetTrackableBehaviour.DataSetName
     {
         get
-        { 
+        {
             // Create the data set name from path.
             string nameWithExtension = QCARRuntimeUtilities.StripFileNameFromPath(mDataSetPath);
 
@@ -35,63 +50,30 @@ public abstract class DataSetTrackableBehaviour : TrackableBehaviour
         }
     }
 
-    // The path to the data set in the file system.
-    // The path together with the storage type can be used as unique identifier.
-    public string DataSetPath
+    /// <summary>
+    /// The path to the data set in the file system.
+    /// Please be aware that the data set name is not a unique identifier at runtime!
+    /// </summary>
+    string IEditorDataSetTrackableBehaviour.DataSetPath
     {
         get
-        { 
+        {
             return mDataSetPath;
         }
-
-        set
-        {
-            mDataSetPath = value;
-        }
     }
 
-    // The storage type that is used to store the data set.
-    // The path together with the storage type can be used as unique identifier.
-    public DataSet.StorageType DataSetStorageType
+    /// <summary>
+    /// sets the DataSetPath (only in editor mode)
+    /// </summary>
+    bool IEditorDataSetTrackableBehaviour.SetDataSetPath(string dataSetPath)
     {
-        get
+        if (mTrackable == null)
         {
-            return mStorageType;
+            mDataSetPath = dataSetPath;
+            return true;
         }
-
-        set
-        {
-            mStorageType = value;
-        }
+        return false;
     }
 
-    #endregion // PROPERTIES
-
-
-
-    #region PROTECTED_MEMBER_VARIABLES
-
-    [SerializeField]
-    [HideInInspector]
-    protected string mDataSetPath = "";
-
-    [SerializeField]
-    [HideInInspector]
-    protected DataSet.StorageType mStorageType =
-        DataSet.StorageType.STORAGE_APPRESOURCE;
-
-    #endregion // PROTECTED_MEMBER_VARIABLES
-
-
-
-    #region PROTECTED_METHODS
-
-    // Checks if this object should be part of the given data set.
-    public bool References(DataSet dataSet)
-    {
-        return (mDataSetPath == dataSet.Path &&
-            mStorageType == dataSet.FileStorageType);
-    }
- 
-    #endregion // PROTECTED_METHODS
+    #endregion // EDITOR_INTERFACE_IMPLEMENTATION
 }

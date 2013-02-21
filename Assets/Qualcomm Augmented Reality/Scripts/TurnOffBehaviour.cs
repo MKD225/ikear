@@ -1,12 +1,14 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-// A utility behaviour to disable rendering of a game object at run time.
+/// <summary>
+/// A utility behaviour to disable rendering of a game object at run time.
+/// </summary>
 public class TurnOffBehaviour : MonoBehaviour
 {
 
@@ -14,14 +16,15 @@ public class TurnOffBehaviour : MonoBehaviour
 
     void Awake()
     {
-        // We remove the mesh components at run-time only, but keep them for
-        // visualization when running in the editor:
-#if !UNITY_EDITOR
-        MeshRenderer targetMeshRenderer = this.GetComponent<MeshRenderer>();
-        Destroy(targetMeshRenderer);
-        MeshFilter targetMesh = this.GetComponent<MeshFilter>();
-        Destroy(targetMesh);
-#endif
+        if (QCARRuntimeUtilities.IsQCAREnabled())
+        {
+            // We remove the mesh components at run-time only, but keep them for
+            // visualization when running in the editor:
+            MeshRenderer targetMeshRenderer = this.GetComponent<MeshRenderer>();
+            Destroy(targetMeshRenderer);
+            MeshFilter targetMesh = this.GetComponent<MeshFilter>();
+            Destroy(targetMesh);
+        }
     }
 
     #endregion // UNITY_MONOBEHAVIOUR_METHODS

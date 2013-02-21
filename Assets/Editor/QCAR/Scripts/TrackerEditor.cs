@@ -1,10 +1,11 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEditor;
+using UnityEngine;
 
 [CustomEditor(typeof(QCARBehaviour))]
 public class TrackerEditor : Editor
@@ -18,6 +19,8 @@ public class TrackerEditor : Editor
     //                  all the targets are moved with respect to the camera.
     public override void OnInspectorGUI()
     {
+        EditorGUIUtility.LookLikeInspector();
+
         QCARBehaviour tb = (QCARBehaviour) target;
 
         DrawDefaultInspector();
@@ -26,15 +29,6 @@ public class TrackerEditor : Editor
                 EditorGUILayout.EnumPopup("World Center Mode",
                 tb.WorldCenterModeSetting));
 
-// We assume Unity 3.2 as minimum requirement.
-#if (UNITY_3_3 || UNITY_3_2)
-        if (tb.WorldCenterModeSetting == QCARBehaviour.WorldCenterMode.USER)
-        {
-            tb.SetWorldCenter((TrackableBehaviour)
-                EditorGUILayout.ObjectField("World Center", tb.WorldCenter,
-                typeof(TrackableBehaviour)));
-        }
-#else
         bool allowSceneObjects = !EditorUtility.IsPersistent(target);
         if (tb.WorldCenterModeSetting == QCARBehaviour.WorldCenterMode.USER)
         {
@@ -43,7 +37,12 @@ public class TrackerEditor : Editor
                 typeof(TrackableBehaviour),
                 allowSceneObjects));
         }        
-#endif
+
+        if (GUI.changed)
+        {
+            // Let Unity know that there is new data for serialization.
+            EditorUtility.SetDirty(tb);
+        }
     }
 
     #endregion // UNITY_EDITOR_METHODS

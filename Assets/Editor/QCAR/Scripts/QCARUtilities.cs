@@ -1,11 +1,12 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 public class QCARUtilities
 {
@@ -33,15 +34,24 @@ public class QCARUtilities
         public const string VIRTUAL_BUTTON_MATERIAL_PATH =
             "Assets/Editor/QCAR/VirtualButtonTextures/" +
             "VirtualButtonPreviewMaterial.mat";
+        public const string UDT_MATERIAL_PATH =
+            "Assets/Qualcomm Augmented Reality/Materials/UserDefinedTarget.mat";
+        public const string CL_MATERIAL_PATH =
+            "Assets/Qualcomm Augmented Reality/Materials/CloudRecoTarget.mat";
 
         // Default name used for Trackables that are not part of the config.xml
         // file yet.
         public const string DEFAULT_TRACKABLE_NAME = "--- EMPTY ---";
         // Default name used for data sets.
         public const string DEFAULT_DATA_SET_NAME = "--- EMPTY ---";
+        // separation line in dropdown menus:
+        public const string PREDEFINED_TARGET_DROPDOWN_TEXT = "Predefined";
+        // string entry used to select user created targets
+        public const string USER_CREATED_TARGET_DROPDOWN_TEXT = "User Defined";
+        // string entry used to select cloud reco targets
+        public const string CLOUD_RECO_DROPDOWN_TEXT = "Cloud Reco";
         // The theoretical maximum of Frame Markers that can be used in an
         // application.
-
         public const int MAX_NUM_FRAME_MARKERS = 512;
     }
 
@@ -243,6 +253,19 @@ public class QCARUtilities
         #pragma warning disable 618
         return EditorUtility.GetPrefabType(target);
         #pragma warning restore 618
+    }
+
+
+    // Create a default ImageTarget that can be added to the default dataset.
+    public static ConfigData.ImageTargetData CreateDefaultImageTarget()
+    {
+        ConfigData.ImageTargetData it = new ConfigData.ImageTargetData();
+
+        // Apply default values
+        it.size = new Vector2(200.0f, 200.0f);
+        it.virtualButtons = new List<ConfigData.VirtualButtonData>();
+
+        return it;
     }
 
     #endregion // PUBLIC_METHODS

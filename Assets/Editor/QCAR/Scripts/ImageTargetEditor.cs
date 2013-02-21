@@ -1,9 +1,11 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
+using System;
+using System.Linq;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -11,19 +13,20 @@ using UnityEngine;
 [CustomEditor(typeof(ImageTargetBehaviour))]
 public class ImageTargetEditor : Editor
 {
+
     #region PUBLIC_METHODS
 
     // Recalculates the aspect ratio of the Image Target from a size vector.
     // Automatically updates mesh as well.
-    public static void UpdateAspectRatio(ImageTargetBehaviour it, Vector2 size)
+    public static void UpdateAspectRatio(IEditorImageTargetBehaviour it, Vector2 size)
     {
-        it.AspectRatio = size[1] / size[0];
+        it.SetAspectRatio(size[1] / size[0]);
         UpdateMesh(it);
     }
 
 
     // Updates the scale values in the transform component from a given size.
-    public static void UpdateScale(ImageTargetBehaviour it, Vector2 size)
+    public static void UpdateScale(IEditorImageTargetBehaviour it, Vector2 size)
     {
         // Update the scale:
 
@@ -40,7 +43,7 @@ public class ImageTargetEditor : Editor
 
         // Check if 3D content should keep its size or if it should be scaled
         // with the target.
-        if (it.mPreserveChildSize)
+        if (it.PreserveChildSize)
         {
             foreach (Transform child in it.transform)
             {
@@ -59,7 +62,7 @@ public class ImageTargetEditor : Editor
 
 
     // Assign material and texture to Image Target.
-    public static void UpdateMaterial(ImageTargetBehaviour it)
+    public static void UpdateMaterial(IEditorImageTargetBehaviour it)
     {
         // Load reference material.
         string referenceMaterialPath =
@@ -88,10 +91,19 @@ public class ImageTargetEditor : Editor
         Texture2D targetTexture =
             (Texture2D)AssetDatabase.LoadAssetAtPath(textureFile,
                                                      typeof(Texture2D));
+
         if (targetTexture == null)
         {
-            // If the texture is null we simply assign a default material.
-            it.renderer.sharedMaterial = referenceMaterial;
+            if (it.ImageTargetType == ImageTargetType.USER_DEFINED)
+                // show the UserDefinedTarget default texture in case it's a user defined target
+                it.renderer.sharedMaterial = (Material)AssetDatabase.LoadAssetAtPath(QCARUtilities.GlobalVars.UDT_MATERIAL_PATH, typeof(Material));
+            else if (it.ImageTargetType == ImageTargetType.CLOUD_RECO)
+                // show the cloud reco default texture in case it's a cloud reco target
+                it.renderer.sharedMaterial = (Material)AssetDatabase.LoadAssetAtPath(QCARUtilities.GlobalVars.CL_MATERIAL_PATH, typeof(Material));
+            else
+                // If the texture is null we simply assign a default material.
+                it.renderer.sharedMaterial = referenceMaterial;
+
             return;
         }
 
@@ -111,13 +123,13 @@ public class ImageTargetEditor : Editor
 
     // Update Virtual Buttons from configuration data.
     public static void UpdateVirtualButtons(ImageTargetBehaviour it,
-                                            ConfigData.VirtualButton[] vbs)
+                                            ConfigData.VirtualButtonData[] vbs)
     {
         for (int i = 0; i < vbs.Length; ++i)
         {
             // Developer is responsible for deleting Virtual Buttons that
             // are not specified in newly imported config.xml files.
-            VirtualButtonBehaviour[] vbBehaviours =
+            IEditorVirtualButtonBehaviour[] vbBehaviours =
                 it.GetComponentsInChildren<VirtualButtonBehaviour>();
 
             bool vbInScene = false;
@@ -128,7 +140,7 @@ public class ImageTargetEditor : Editor
                 if (vbBehaviours[j].VirtualButtonName == vbs[i].name)
                 {
                     vbBehaviours[j].enabled = vbs[i].enabled;
-                    vbBehaviours[j].SensitivitySetting = vbs[i].sensitivity;
+                    vbBehaviours[j].SetSensitivitySetting(vbs[i].sensitivity);
                     vbBehaviours[j].SetPosAndScaleFromButtonArea(
                         new Vector2(vbs[i].rectangle[0], vbs[i].rectangle[1]),
                         new Vector2(vbs[i].rectangle[2], vbs[i].rectangle[3]));
@@ -149,7 +161,7 @@ public class ImageTargetEditor : Editor
 
     // Add Virtual Buttons that are specified in the configuration data.
     public static void AddVirtualButtons(ImageTargetBehaviour it,
-                                         ConfigData.VirtualButton[] vbs)
+                                         ConfigData.VirtualButtonData[] vbs)
     {
         for (int i = 0; i < vbs.Length; ++i)
         {
@@ -180,10 +192,12 @@ public class ImageTargetEditor : Editor
             SceneManager.Instance.InitScene();
         }
 
+        IEditorImageTargetBehaviour editorItb = itb;
+
         // Only setup target if it has not been set up previously.
-        if (!itb.mInitializedInEditor)
+        if (!editorItb.InitializedInEditor)
         {
-            ConfigData.ImageTarget itConfig;
+            ConfigData.ImageTargetData itConfig;
 
             ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
             dataSetData.GetImageTarget(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME, out itConfig);
@@ -191,13 +205,13 @@ public class ImageTargetEditor : Editor
             UpdateAspectRatio(itb, itConfig.size);
             UpdateScale(itb, itConfig.size);
             UpdateMaterial(itb);
-            itb.DataSetPath = QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME;
-            itb.TrackableName = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
-            itb.mInitializedInEditor = true;
+            editorItb.SetDataSetPath(QCARUtilities.GlobalVars.DEFAULT_DATA_SET_NAME);
+            editorItb.SetNameForTrackable(QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
+            editorItb.SetInitializedInEditor(true);
         }
 
         // Cache the current scale of the target:
-        itb.mPreviousScale = itb.transform.localScale;
+        editorItb.SetPreviousScale(itb.transform.localScale);
     }
 
 
@@ -205,89 +219,40 @@ public class ImageTargetEditor : Editor
     // must be defined in the "config.xml" file.
     public override void OnInspectorGUI()
     {
+        EditorGUIUtility.LookLikeInspector();
+
         DrawDefaultInspector();
 
         ImageTargetBehaviour itb = (ImageTargetBehaviour)target;
+        IEditorImageTargetBehaviour editorItb = itb;
 
         if (QCARUtilities.GetPrefabType(itb) == PrefabType.Prefab)
         {
             GUILayout.Label("You can't choose a target for a prefab.");
         }
-        else if (ConfigDataManager.Instance.NumConfigDataObjects > 1) //< "> 1" because we ignore the default dataset.
-        {
-            // Draw list for choosing a data set.
-            string[] dataSetList = new string[ConfigDataManager.Instance.NumConfigDataObjects];
-            ConfigDataManager.Instance.GetConfigDataNames(dataSetList);
-            int currentDataSetIndex = QCARUtilities.GetIndexFromString(itb.DataSetName, dataSetList);
-
-            // If name is not in array we automatically choose default name;
-            if (currentDataSetIndex < 0)
-                currentDataSetIndex = 0;
-
-            int newDataSetIndex = EditorGUILayout.Popup("Data Set",
-                                                        currentDataSetIndex,
-                                                        dataSetList);
-
-            string chosenDataSet = dataSetList[newDataSetIndex];
-
-            ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(chosenDataSet);
-            
-            // Draw list for choosing a Trackable.
-            string[] namesList = new string[dataSetData.NumImageTargets];
-            dataSetData.CopyImageTargetNames(namesList, 0);
-            int currentTrackableIndex =
-                QCARUtilities.GetIndexFromString(itb.TrackableName, namesList);
-
-            // If name is not in array we automatically choose default name;
-            if (currentTrackableIndex < 0)
-                currentTrackableIndex = 0;
-
-            // Reset name index if a new data set has been chosen.
-            if (newDataSetIndex != currentDataSetIndex)
-            {
-                currentTrackableIndex = 0;
-            }
-
-            int newTrackableIndex = EditorGUILayout.Popup("Image Target",
-                                                          currentTrackableIndex,
-                                                          namesList);
-
-            // Draw check box to de-/activate "preserve child size" mode.
-            itb.mPreserveChildSize =
-                EditorGUILayout.Toggle("Preserve child size",
-                                       itb.mPreserveChildSize);
-
-            if (namesList.Length > 0)
-            {
-                if (newDataSetIndex != currentDataSetIndex || newTrackableIndex != currentTrackableIndex)
-                {
-                    itb.DataSetPath =
-                        "QCAR/" + dataSetList[newDataSetIndex] + ".xml";
-
-                    itb.DataSetStorageType =
-                        DataSet.StorageType.STORAGE_APPRESOURCE;
-
-                    itb.TrackableName = namesList[newTrackableIndex];
-
-                    ConfigData.ImageTarget itConfig;
-
-                    dataSetData.GetImageTarget(itb.TrackableName, out itConfig);
-
-                    // Update the aspect ratio and mesh used for visualisation:
-                    UpdateAspectRatio(itb, itConfig.size);
-
-                    // Update the material:
-                    UpdateMaterial(itb);
-                }
-            }
-        }
         else
         {
-            if (GUILayout.Button("No targets defined. Press here for target " +
-                                 "creation!"))
-            {
-                SceneManager.Instance.GoToARPage();
-            }
+            ImageTargetType oldType = editorItb.ImageTargetType;
+
+            // show dropdown for type selection (predefined TMS target vs. user defined target)
+            string[] typeNames =
+                new[] { QCARUtilities.GlobalVars.PREDEFINED_TARGET_DROPDOWN_TEXT, 
+                        QCARUtilities.GlobalVars.USER_CREATED_TARGET_DROPDOWN_TEXT, 
+                        QCARUtilities.GlobalVars.CLOUD_RECO_DROPDOWN_TEXT };
+            ImageTargetType[] typeValues = 
+                new [] { ImageTargetType.PREDEFINED, 
+                         ImageTargetType.USER_DEFINED,
+                         ImageTargetType.CLOUD_RECO};
+            editorItb.SetImageTargetType(typeValues[EditorGUILayout.Popup("Type", typeValues.ToList().IndexOf(editorItb.ImageTargetType), typeNames)]);
+
+            bool typeChanged = editorItb.ImageTargetType != oldType;
+
+            if (editorItb.ImageTargetType == ImageTargetType.PREDEFINED)
+                DrawPredefinedTargetInsprectorUI(itb, typeChanged);
+            else if (editorItb.ImageTargetType == ImageTargetType.USER_DEFINED)
+                DrawUserDefinedTargetInspectorUI(itb, typeChanged);
+            else
+                DrawCloudRecoTargetInspectorUI(itb, typeChanged);
         }
 
         if (GUI.changed)
@@ -305,32 +270,38 @@ public class ImageTargetEditor : Editor
     #region PRIVATE_METHODS
 
     private static void AddVirtualButton(ImageTargetBehaviour it,
-                                         ConfigData.VirtualButton vb)
+                                         ConfigData.VirtualButtonData vb)
     {
-        VirtualButtonBehaviour newVBBehaviour =
+        IEditorVirtualButtonBehaviour newVBBehaviour =
             it.CreateVirtualButton(vb.name, new Vector2(0.0f, 0.0f),
                                    new Vector2(1.0f, 1.0f));
+        if (newVBBehaviour != null)
+        {
+            newVBBehaviour.SetPosAndScaleFromButtonArea(
+                new Vector2(vb.rectangle[0], vb.rectangle[1]),
+                new Vector2(vb.rectangle[2], vb.rectangle[3]));
 
-        newVBBehaviour.SetPosAndScaleFromButtonArea(
-            new Vector2(vb.rectangle[0], vb.rectangle[1]),
-            new Vector2(vb.rectangle[2], vb.rectangle[3]));
+            VirtualButtonEditor.CreateVBMesh(newVBBehaviour);
 
-        VirtualButtonEditor.CreateVBMesh(newVBBehaviour);
+            // Load default material.
+            VirtualButtonEditor.CreateMaterial(newVBBehaviour);
 
-        // Load default material.
-        VirtualButtonEditor.CreateMaterial(newVBBehaviour);
+            newVBBehaviour.enabled = vb.enabled;
 
-        newVBBehaviour.enabled = vb.enabled;
+            // Add Component to destroy VirtualButton meshes at runtime.
+            newVBBehaviour.gameObject.AddComponent<TurnOffBehaviour>();
 
-        // Add Component to destroy VirtualButton meshes at runtime.
-        newVBBehaviour.gameObject.AddComponent<TurnOffBehaviour>();
-
-        // Make sure Virtual Button is correctly aligned with Image Target
-        newVBBehaviour.UpdatePose();
+            // Make sure Virtual Button is correctly aligned with Image Target
+            newVBBehaviour.UpdatePose();
+        }
+        else
+        {
+            Debug.LogError("VirtualButton could not be added!");
+        }
     }
 
 
-    private static void UpdateMesh(ImageTargetBehaviour it)
+    private static void UpdateMesh(IEditorImageTargetBehaviour it)
     {
         GameObject itObject = it.gameObject;
 
@@ -385,6 +356,126 @@ public class ImageTargetEditor : Editor
 
         // Cleanup assets that have been created temporarily.
         EditorUtility.UnloadUnusedAssets();
+    }
+
+    private void DrawCloudRecoTargetInspectorUI(IEditorImageTargetBehaviour itb, bool typeChanged)
+    {
+        if (typeChanged)
+        {
+            ConfigData.ImageTargetData itConfig = QCARUtilities.CreateDefaultImageTarget();
+            itb.SetNameForTrackable(string.Empty);
+
+            // Update the aspect ratio and mesh used for visualisation:
+            UpdateAspectRatio(itb, itConfig.size);
+
+            // Update the material:
+            UpdateMaterial(itb);
+        }
+
+        // Draw check box to de-/activate "preserve child size" mode.
+        itb.SetPreserveChildSize(EditorGUILayout.Toggle("Preserve child size", itb.PreserveChildSize));
+    }
+
+    private void DrawUserDefinedTargetInspectorUI(IEditorImageTargetBehaviour itb, bool typeChanged)
+    {
+        if (typeChanged)
+        {
+            ConfigData.ImageTargetData itConfig = QCARUtilities.CreateDefaultImageTarget();
+            itb.SetNameForTrackable(string.Empty);
+
+            // Update the aspect ratio and mesh used for visualisation:
+            UpdateAspectRatio(itb, itConfig.size);
+
+            // Update the material:
+            UpdateMaterial(itb);
+        }
+
+        if (itb.TrackableName.Length > 64)
+            EditorGUILayout.HelpBox("Target name must not exceed 64 character limit!", MessageType.Error);
+
+        itb.SetNameForTrackable(EditorGUILayout.TextField("Target Name", itb.TrackableName));
+
+        // Draw check box to de-/activate "preserve child size" mode.
+        itb.SetPreserveChildSize(EditorGUILayout.Toggle("Preserve child size", itb.PreserveChildSize));
+    }
+
+    private void DrawPredefinedTargetInsprectorUI(IEditorImageTargetBehaviour itb, bool typeChanged)
+    {
+        if (typeChanged)
+            UpdateMaterial(itb);
+
+        if (ConfigDataManager.Instance.NumConfigDataObjects > 1) //< "> 1" because we ignore the default dataset.
+        {
+            // Draw list for choosing a data set.
+            string[] dataSetList = new string[ConfigDataManager.Instance.NumConfigDataObjects];
+            ConfigDataManager.Instance.GetConfigDataNames(dataSetList);
+            int currentDataSetIndex = QCARUtilities.GetIndexFromString(itb.DataSetName, dataSetList);
+
+            // If name is not in array we automatically choose default name;
+            if (currentDataSetIndex < 0)
+                currentDataSetIndex = 0;
+
+            int newDataSetIndex = EditorGUILayout.Popup("Data Set",
+                                                        currentDataSetIndex,
+                                                        dataSetList);
+
+            string chosenDataSet = dataSetList[newDataSetIndex];
+
+            ConfigData dataSetData = ConfigDataManager.Instance.GetConfigData(chosenDataSet);
+
+            // Draw list for choosing a Trackable
+            int targetCount = dataSetData.NumImageTargets;
+            string[] namesList = new string[targetCount];
+            dataSetData.CopyImageTargetNames(namesList, 0);
+
+            // get the current index
+            int currentTrackableIndex = QCARUtilities.GetIndexFromString(itb.TrackableName, namesList);
+
+            // If name is not in array we automatically choose default name;
+            if (currentTrackableIndex < 0)
+                currentTrackableIndex = 0;
+
+            // Reset name index if a new data set has been chosen.
+            if (newDataSetIndex != currentDataSetIndex)
+            {
+                currentTrackableIndex = 0;
+            }
+
+            int newTrackableIndex = EditorGUILayout.Popup("Image Target",
+                                                            currentTrackableIndex,
+                                                            namesList);
+
+            // Draw check box to de-/activate "preserve child size" mode.
+            itb.SetPreserveChildSize(EditorGUILayout.Toggle("Preserve child size", itb.PreserveChildSize));
+
+            if (namesList.Length > 0)
+            {
+                if (newDataSetIndex != currentDataSetIndex || newTrackableIndex != currentTrackableIndex || typeChanged)
+                {
+                    itb.SetDataSetPath("QCAR/" + dataSetList[newDataSetIndex] + ".xml");
+
+                    string selectedString = namesList[newTrackableIndex];
+
+                    ConfigData.ImageTargetData itConfig;
+                    itb.SetNameForTrackable(selectedString);
+                    dataSetData.GetImageTarget(itb.TrackableName, out itConfig);
+                    
+                    // Update the aspect ratio and mesh used for visualisation:
+                    UpdateAspectRatio(itb, itConfig.size);
+
+                    // Update the material:
+                    UpdateMaterial(itb);
+                }
+            }
+        }
+        else
+        {
+            if (GUILayout.Button("No targets defined. Press here for target " +
+                                    "creation!"))
+            {
+                SceneManager.Instance.GoToARPage();
+            }
+        }
     }
 
     #endregion // PRIVATE_METHODS

@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -17,7 +17,7 @@ public class QCARHelpMenu : Editor
     public static void browseQCARHelp()
     {
         System.Diagnostics.Process.Start(
-            "https://ar.qualcomm.at/qdevnet/sdk/android/Get Started - Unity Extension - Android");
+            "https://developer.vuforia.com/resources/dev-guide/getting-started");
     }
 
 
@@ -28,7 +28,7 @@ public class QCARHelpMenu : Editor
     public static void browseQCARReleaseNotes()
     {
         System.Diagnostics.Process.Start(
-            "https://ar.qualcomm.com/unity/sdk/ar/");
+            "https://developer.vuforia.com/resources/sdk/unity-extensions-vuforia-v20#sdkReleaseNotes");
     }
 
     #endregion PUBLIC_METHODS

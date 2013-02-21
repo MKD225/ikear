@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -33,27 +33,33 @@ public class VirtualButtonEditor : Editor
 
         foreach (VirtualButtonBehaviour vb in vbs)
         {
-            if (vb.GetImageTarget() == null)
+            IEditorImageTargetBehaviour it = vb.GetImageTargetBehaviour();
+            if (it == null)
             {
                 Debug.LogError("Virtual Button '" + vb.name + "' doesn't " +
                     "have an Image Target as an ancestor.");
+            }
+            else
+            {
+                if (it.ImageTargetType == ImageTargetType.USER_DEFINED)
+                    Debug.LogError("Virtual Button '" + vb.name + "' cannot be added to a user defined target.");
             }
         }
     }
 
 
     // Correct Virtual Button Poses.
-    public static bool CorrectPoses(VirtualButtonBehaviour[] vbs)
+    public static bool CorrectPoses(IEditorVirtualButtonBehaviour[] vbs)
     {
         bool posesUpdated = false;
-        foreach (VirtualButtonBehaviour vb in vbs)
+        foreach (IEditorVirtualButtonBehaviour vb in vbs)
         {
             // Check if Virtual Button pose has changed in scene or has never
             // been updated
-            if (vb.mPrevTransform != vb.transform.localToWorldMatrix ||
-                (vb.transform.parent != null && vb.mPrevParent !=
+            if (vb.PreviousTransform != vb.transform.localToWorldMatrix ||
+                (vb.transform.parent != null && vb.PreviousParent !=
                 vb.transform.parent.gameObject) ||
-                !vb.mHasUpdatedPose)
+                !vb.HasUpdatedPose)
             {
                 // Update the buttons pose
                 if (vb.UpdatePose())
@@ -62,9 +68,9 @@ public class VirtualButtonEditor : Editor
                     posesUpdated = true;
                 }
 
-                vb.mPrevTransform = vb.transform.localToWorldMatrix;
-                vb.mPrevParent = vb.transform.parent ?
-                            vb.transform.parent.gameObject : null;
+                vb.SetPreviousTransform(vb.transform.localToWorldMatrix);
+                vb.SetPreviousParent(vb.transform.parent ?
+                            vb.transform.parent.gameObject : null);
             }
         }
         return posesUpdated;
@@ -72,7 +78,7 @@ public class VirtualButtonEditor : Editor
 
 
     // Create a mesh with size 1, 1.
-    public static void CreateVBMesh(VirtualButtonBehaviour vb)
+    public static void CreateVBMesh(IEditorVirtualButtonBehaviour vb)
     {
         GameObject vbObject = vb.gameObject;
 
@@ -127,7 +133,7 @@ public class VirtualButtonEditor : Editor
 
 
     // Assign default material to Virtual Button.
-    public static void CreateMaterial(VirtualButtonBehaviour vb)
+    public static void CreateMaterial(IEditorVirtualButtonBehaviour vb)
     {
         // Load reference material
         string referenceMaterialPath =
@@ -215,7 +221,7 @@ public class VirtualButtonEditor : Editor
         VirtualButtonBehaviour vb = (VirtualButtonBehaviour)target;
 
         // Update the pose if required:
-        if (!vb.mHasUpdatedPose)
+        if (!vb.HasUpdatedPose)
         {
             vb.UpdatePose();
         }
@@ -234,16 +240,18 @@ public class VirtualButtonEditor : Editor
     // Lets the user set sensitivity and name of a Virtual Button.
     public override void OnInspectorGUI()
     {
+        EditorGUIUtility.LookLikeInspector();
+
         DrawDefaultInspector();
 
         VirtualButtonBehaviour vb = (VirtualButtonBehaviour)target;
+        IEditorVirtualButtonBehaviour editorVB = vb;
 
-        vb.InitializeName(EditorGUILayout.TextField(
-                            "Name", vb.VirtualButtonName));
+        editorVB.SetVirtualButtonName(EditorGUILayout.TextField(
+                            "Name", editorVB.VirtualButtonName));
 
-        vb.SensitivitySetting =
-            (VirtualButtonBehaviour.Sensitivity)EditorGUILayout.EnumPopup(
-                "Sensitivity Setting", vb.SensitivitySetting);
+        editorVB.SetSensitivitySetting((VirtualButton.Sensitivity)EditorGUILayout.EnumPopup(
+                "Sensitivity Setting", editorVB.SensitivitySetting));
 
         if (GUI.changed)
         {
@@ -273,7 +281,7 @@ public class VirtualButtonEditor : Editor
     // target and prints an error accordingly.
     private static void DetectDuplicates(ImageTargetBehaviour it)
     {
-
+        IEditorImageTargetBehaviour editorIt = it;
         VirtualButtonBehaviour[] vbs =
                         it.GetComponentsInChildren<VirtualButtonBehaviour>();
 
@@ -285,7 +293,7 @@ public class VirtualButtonEditor : Editor
                 {
                     Debug.LogError("Duplicate virtual buttons with name '" +
                         vbs[i].VirtualButtonName + "' detected in " +
-                        "Image Target '" + it.TrackableName + "'.");
+                        "Image Target '" + editorIt.TrackableName + "'.");
                 }
             }
         }

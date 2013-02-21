@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -7,41 +7,27 @@ Qualcomm Confidential and Proprietary
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This behaviour allows to automatically load and activate one or more DataSet on startup
+/// </summary>
 public class DataSetLoadBehaviour : MonoBehaviour
 {
-    #region PROPERTIES
-
-    public string DataSetToActivate
-    {
-        get
-        {
-            return mDataSetToActivate;
-        }
-
-        set
-        {
-            mDataSetToActivate = value;
-        }
-    }
-
-    #endregion // PROPERTIES
-
-
-
     #region PRIVATE_MEMBER_VARIABLES
 
     [SerializeField]
     [HideInInspector]
-    private string mDataSetToActivate;
+    public List<string> mDataSetsToActivate = new List<string>();
 
     #endregion // PRIVATE_MEMBER_VARIABLES
 
 
 
     #region PUBLIC_MEMBER_VARIABLES
+
     [SerializeField]
     [HideInInspector]
     public List<string> mDataSetsToLoad = new List<string>();
+
     #endregion // PUBLIC_MEMBER_VARIABLES
 
 
@@ -50,11 +36,17 @@ public class DataSetLoadBehaviour : MonoBehaviour
 
     void Awake()
     {
-        if (Application.isEditor)
+        if (!QCARRuntimeUtilities.IsQCAREnabled())
         {
             return;
         }
-        
+
+        if (QCARRuntimeUtilities.IsPlayMode())
+        {
+            // initialize QCAR 
+            QCARUnity.CheckInitializationError();
+        }
+
         if (TrackerManager.Instance.GetTracker(Tracker.Type.IMAGE_TRACKER) == null)
         {
             TrackerManager.Instance.InitTracker(Tracker.Type.IMAGE_TRACKER);
@@ -84,18 +76,11 @@ public class DataSetLoadBehaviour : MonoBehaviour
             }
 
             // Activate the data set if it is the one specified in the editor.
-            if (mDataSetToActivate == dataSetName)
+            if (mDataSetsToActivate.Contains(dataSetName))
             {
                 imageTracker.ActivateDataSet(dataSet);
             }
         }
-    }
-
-
-    void OnDestroy()
-    {
-        // Note we do not destroy the dataset as this is handled by the
-        // QCARBehaviour.
     }
 
     #endregion // UNITY_MONOBEHAVIOUR_METHODS

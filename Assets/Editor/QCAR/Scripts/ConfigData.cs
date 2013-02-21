@@ -1,5 +1,5 @@
 ﻿/*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -15,23 +15,23 @@ public class ConfigData
     #region NESTED
 
     // Representation of a Virtual Button node in the config.xml file.
-    public struct VirtualButton
+    public struct VirtualButtonData
     {
         public string name;
         public bool enabled;
         public Vector4 rectangle;
-        public VirtualButtonBehaviour.Sensitivity sensitivity;
+        public VirtualButton.Sensitivity sensitivity;
     }
 
     // Representation of an Image Target node in the config.xml file.
-    public struct ImageTarget
+    public struct ImageTargetData
     {
         public Vector2 size;
-        public List<VirtualButton> virtualButtons;
+        public List<VirtualButtonData> virtualButtons;
     }
 
     // Representation of a Multi Target Part node in the config.xml file.
-    public struct MultiTargetPart
+    public struct MultiTargetPartData
     {
         public string name;
         public Vector3 translation;
@@ -39,13 +39,13 @@ public class ConfigData
     }
 
     // Representation of a Multi Target node in the config.xml file.
-    public struct MultiTarget
+    public struct MultiTargetData
     {
-        public List<MultiTargetPart> parts;
+        public List<MultiTargetPartData> parts;
     }
 
     // Representation of a Frame Marker node in the config.xml file.
-    public struct FrameMarker
+    public struct FrameMarkerData
     {
         public string name;
         public Vector2 size;
@@ -90,8 +90,8 @@ public class ConfigData
 
     #region PRIVATE_MEMBER_VARIABLES
 
-    private Dictionary<string, ImageTarget> imageTargets;
-    private Dictionary<string, MultiTarget> multiTargets;
+    private Dictionary<string, ImageTargetData> imageTargets;
+    private Dictionary<string, MultiTargetData> multiTargets;
 
     #endregion // PRIVATE_MEMBER_VARIABLES
 
@@ -103,8 +103,8 @@ public class ConfigData
     // Creates initializes internal collections.
     public ConfigData()
     {
-        imageTargets = new Dictionary<string, ImageTarget>();
-        multiTargets = new Dictionary<string, MultiTarget>();
+        imageTargets = new Dictionary<string, ImageTargetData>();
+        multiTargets = new Dictionary<string, MultiTargetData>();
     }
 
     // Copy constructor of ConfigData class.
@@ -112,11 +112,11 @@ public class ConfigData
     {
         // Create Image Target dictionary from original.
         imageTargets =
-            new Dictionary<string, ImageTarget>(original.imageTargets);
+            new Dictionary<string, ImageTargetData>(original.imageTargets);
 
         // Create Multi Target dictionary from original.
         multiTargets =
-            new Dictionary<string, MultiTarget>(original.multiTargets);
+            new Dictionary<string, MultiTargetData>(original.multiTargets);
     }
 
     #endregion //CONSTRUCTION
@@ -127,7 +127,7 @@ public class ConfigData
 
     // Set attributes of the Image Target with the given name.
     // If the Image Target does not yet exist it is created automatically.
-    public void SetImageTarget(ImageTarget item, string name)
+    public void SetImageTarget(ImageTargetData item, string name)
     {
         imageTargets[name] = item;
     }
@@ -135,18 +135,18 @@ public class ConfigData
 
     // Set attributes of the Multi Target with the given name.
     // If the Multi Target does not yet exist it is created automatically.
-    public void SetMultiTarget(MultiTarget item, string name)
+    public void SetMultiTarget(MultiTargetData item, string name)
     {
         multiTargets[name] = item;
     }
 
 
     // Add Virtual Button to the Image Target with the given imageTargetName.
-    public void AddVirtualButton(VirtualButton item, string imageTargetName)
+    public void AddVirtualButton(VirtualButtonData item, string imageTargetName)
     {
         try
         {
-            ImageTarget it = imageTargets[imageTargetName];
+            ImageTargetData it = imageTargets[imageTargetName];
             it.virtualButtons.Add(item);
         }
         catch
@@ -157,11 +157,11 @@ public class ConfigData
 
 
     // Add Multi Target Part to the Multi Target with the given multiTargetName.
-    public void AddMultiTargetPart(MultiTargetPart item, string multiTargetName)
+    public void AddMultiTargetPart(MultiTargetPartData item, string multiTargetName)
     {
         try
         {
-            MultiTarget mt = multiTargets[multiTargetName];
+            MultiTargetData mt = multiTargets[multiTargetName];
             mt.parts.Add(item);
         }
         catch
@@ -196,7 +196,7 @@ public class ConfigData
     // Clear all Virtual Button data.
     public void ClearVirtualButtons()
     {
-        foreach (ImageTarget it in imageTargets.Values)
+        foreach (ImageTargetData it in imageTargets.Values)
         {
             it.virtualButtons.Clear();
         }
@@ -222,7 +222,7 @@ public class ConfigData
     // Creates a new Image Target with the data of the Image Target with the
     // given name.
     // Returns false if Image Target does not exist.
-    public void GetImageTarget(string name, out ImageTarget it)
+    public void GetImageTarget(string name, out ImageTargetData it)
     {
         try
         {
@@ -238,7 +238,7 @@ public class ConfigData
     // Creates a new Multi Target with the data of the Multi Target with the
     // given name.
     // Returns false if Multi Target does not exist.
-    public void GetMultiTarget(string name, out MultiTarget mt)
+    public void GetMultiTarget(string name, out MultiTargetData mt)
     {
         try
         {
@@ -257,16 +257,16 @@ public class ConfigData
     // Returns false if Virtual Button does not exist.
     public void GetVirtualButton(string name,
                                  string imageTargetName,
-                                 out VirtualButton vb)
+                                 out VirtualButtonData vb)
     {
-        vb = new VirtualButton();
+        vb = new VirtualButtonData();
 
         try
         {
-            ImageTarget it;
+            ImageTargetData it;
             GetImageTarget(imageTargetName, out it);
 
-            List<VirtualButton> vbs = it.virtualButtons;
+            List<VirtualButtonData> vbs = it.virtualButtons;
             for (int i = 0; i < vbs.Count; ++i)
             {
                 if (vbs[i].name == name)

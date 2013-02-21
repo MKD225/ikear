@@ -1,5 +1,5 @@
 ﻿/*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -234,30 +234,17 @@ public class ConfigDataManager
     {
         ConfigData defaultDataSetData = new ConfigData();
 
-        defaultDataSetData.SetImageTarget(CreateDefaultImageTarget(), QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
+        defaultDataSetData.SetImageTarget(QCARUtilities.CreateDefaultImageTarget(), QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
         defaultDataSetData.SetMultiTarget(CreateDefaultMultiTarget(), QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME);
 
         return defaultDataSetData;
     }
 
 
-    // Create a default ImageTarget that can be added to the default dataset.
-    private ConfigData.ImageTarget CreateDefaultImageTarget()
-    {
-        ConfigData.ImageTarget it = new ConfigData.ImageTarget();
-
-        // Apply default values
-        it.size = new Vector2(200.0f, 200.0f);
-        it.virtualButtons = new List<ConfigData.VirtualButton>();
-
-        return it;
-    }
-
-
     // Create a default MultiTarget that can be added to the default dataset.
-    private ConfigData.MultiTarget CreateDefaultMultiTarget()
+    private ConfigData.MultiTargetData CreateDefaultMultiTarget()
     {
-        ConfigData.MultiTarget mt = new ConfigData.MultiTarget();
+        ConfigData.MultiTargetData mt = new ConfigData.MultiTargetData();
 
         // Apply default values
         mt.parts = CreateDefaultParts();
@@ -267,54 +254,54 @@ public class ConfigDataManager
 
 
     // Create Multi Target from default Image Targets
-    private List<ConfigData.MultiTargetPart> CreateDefaultParts()
+    private List<ConfigData.MultiTargetPartData> CreateDefaultParts()
     {
-        List<ConfigData.MultiTargetPart> prts =
-            new List<ConfigData.MultiTargetPart>(6);
+        List<ConfigData.MultiTargetPartData> prts =
+            new List<ConfigData.MultiTargetPartData>(6);
 
         // Get default Image Target and use it as template for MT parts.
-        ConfigData.ImageTarget it = CreateDefaultImageTarget();
+        ConfigData.ImageTargetData it = QCARUtilities.CreateDefaultImageTarget();
 
         // We assume a square default target.
         float offset = it.size.x * 0.5f;
 
         // Front
-        ConfigData.MultiTargetPart frontPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData frontPart = new ConfigData.MultiTargetPartData();
         frontPart.translation = new Vector3(0, offset, 0);
         frontPart.rotation = Quaternion.AngleAxis(0, new Vector3(1, 0, 0));
         frontPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
         prts.Add(frontPart);
 
         // Back
-        ConfigData.MultiTargetPart backPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData backPart = new ConfigData.MultiTargetPartData();
         backPart.translation = new Vector3(0, -offset, 0);
         backPart.rotation = Quaternion.AngleAxis(180, new Vector3(1, 0, 0));
         backPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
         prts.Add(backPart);
 
         // Left
-        ConfigData.MultiTargetPart leftPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData leftPart = new ConfigData.MultiTargetPartData();
         leftPart.translation = new Vector3(-offset, 0, 0);
         leftPart.rotation = Quaternion.AngleAxis(90, new Vector3(0, 0, 1));
         leftPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
         prts.Add(leftPart);
 
         // Right
-        ConfigData.MultiTargetPart rightPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData rightPart = new ConfigData.MultiTargetPartData();
         rightPart.translation = new Vector3(offset, 0, 0);
         rightPart.rotation = Quaternion.AngleAxis(-90, new Vector3(0, 0, 1));
         rightPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
         prts.Add(rightPart);
 
         // Top
-        ConfigData.MultiTargetPart topPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData topPart = new ConfigData.MultiTargetPartData();
         topPart.translation = new Vector3(0, 0, offset);
         topPart.rotation = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
         topPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;
         prts.Add(topPart);
 
         // Bottom
-        ConfigData.MultiTargetPart btmPart = new ConfigData.MultiTargetPart();
+        ConfigData.MultiTargetPartData btmPart = new ConfigData.MultiTargetPartData();
         btmPart.translation = new Vector3(0, 0, -offset);
         btmPart.rotation = Quaternion.AngleAxis(-90, new Vector3(1, 0, 0));
         btmPart.name = QCARUtilities.GlobalVars.DEFAULT_TRACKABLE_NAME;

@@ -1,12 +1,14 @@
 /*==============================================================================
-            Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+            Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
             All Rights Reserved.
             Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
-// A custom handler that implements the ITrackableEventHandler interface.
+/// <summary>
+/// A custom handler that implements the ITrackableEventHandler interface.
+/// </summary>
 public class DefaultTrackableEventHandler : MonoBehaviour,
                                             ITrackableEventHandler
 {
@@ -37,8 +39,10 @@ public class DefaultTrackableEventHandler : MonoBehaviour,
 
     #region PUBLIC_METHODS
 
-    // Implementation of the ITrackableEventHandler function called when the
-    // tracking state changes.
+    /// <summary>
+    /// Implementation of the ITrackableEventHandler function called when the
+    /// tracking state changes.
+    /// </summary>
     public void OnTrackableStateChanged(
                                     TrackableBehaviour.Status previousStatus,
                                     TrackableBehaviour.Status newStatus)
@@ -64,9 +68,17 @@ public class DefaultTrackableEventHandler : MonoBehaviour,
     private void OnTrackingFound()
     {
         Renderer[] rendererComponents = GetComponentsInChildren<Renderer>();
+        Collider[] colliderComponents = GetComponentsInChildren<Collider>();
 
         // Enable rendering:
-        foreach (Renderer component in rendererComponents) {
+        foreach (Renderer component in rendererComponents)
+        {
+            component.enabled = true;
+        }
+
+        // Enable colliders:
+        foreach (Collider component in colliderComponents)
+        {
             component.enabled = true;
         }
 
@@ -77,9 +89,17 @@ public class DefaultTrackableEventHandler : MonoBehaviour,
     private void OnTrackingLost()
     {
         Renderer[] rendererComponents = GetComponentsInChildren<Renderer>();
+        Collider[] colliderComponents = GetComponentsInChildren<Collider>();
 
         // Disable rendering:
-        foreach (Renderer component in rendererComponents) {
+        foreach (Renderer component in rendererComponents)
+        {
+            component.enabled = false;
+        }
+
+        // Disable colliders:
+        foreach (Collider component in colliderComponents)
+        {
             component.enabled = false;
         }
 

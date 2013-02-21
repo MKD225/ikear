@@ -1,16 +1,21 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
 
 using UnityEngine;
 
+/// <summary>
+/// The common base class for the ImageTracker and the MarkerTracker
+/// </summary>
 public abstract class Tracker
 {
     #region NESTED
 
-    // Enumeration of the different tracker types
+    /// <summary>
+    /// Enumeration of the different tracker types
+    /// </summary>
     public enum Type
     {
         IMAGE_TRACKER,    // Tracks ImageTargets and MultiTargets
@@ -23,10 +28,14 @@ public abstract class Tracker
 
     #region PUBLIC_METHODS
 
-    // Starts the Tracker
+    /// <summary>
+    /// Starts the Tracker
+    /// </summary>
     public abstract bool Start();
 
-    // Stops the Tracker
+    /// <summary>
+    /// Stops the Tracker
+    /// </summary>
     public abstract void Stop();
 
     #endregion // PUBLIC_METHODS
@@ -35,10 +44,12 @@ public abstract class Tracker
 
     #region PROTECTED_METHODS
 
-    // Position the camera relative to a Trackable.
+    /// <summary>
+    /// Position the camera relative to a Trackable.
+    /// </summary>
     protected void PositionCamera(TrackableBehaviour trackableBehaviour,
                                   Camera arCamera,
-                                  QCARManager.PoseData camToTargetPose)
+                                  QCARManagerImpl.PoseData camToTargetPose)
     {
         arCamera.transform.localPosition =
                 trackableBehaviour.transform.rotation *
@@ -53,10 +64,13 @@ public abstract class Tracker
                 Quaternion.Inverse(camToTargetPose.orientation);
     }    
     
-    // Position a Trackable relative to the Camera.
+
+    /// <summary>
+    /// Position a Trackable relative to the Camera.
+    /// </summary>
     protected void PositionTrackable(TrackableBehaviour trackableBehaviour,
                                      Camera arCamera,
-                                     QCARManager.PoseData camToTargetPose)
+                                     QCARManagerImpl.PoseData camToTargetPose)
     {
         trackableBehaviour.transform.position =
                 arCamera.transform.TransformPoint(camToTargetPose.position);

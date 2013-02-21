@@ -1,5 +1,5 @@
 /*==============================================================================
-Copyright (c) 2012 QUALCOMM Austria Research Center GmbH.
+Copyright (c) 2010-2012 QUALCOMM Austria Research Center GmbH.
 All Rights Reserved.
 Qualcomm Confidential and Proprietary
 ==============================================================================*/
@@ -42,9 +42,9 @@ public class ConfigParser
 
 
     #region PUBLIC_METHODS
-
-    // This method takes a configData object and creates a config.xml file at
-    // the given path out of it.
+    
+    // This method reads a config.xml file at the given path and fills the
+    // ConfigData object with the data.
     public bool fileToStruct(string configXMLPath, ConfigData configData)
     {
         if (!File.Exists(configXMLPath))
@@ -103,12 +103,12 @@ public class ConfigParser
                             }
                             configReader.MoveToElement();
 
-                            ConfigData.ImageTarget imageTarget =
-                                new ConfigData.ImageTarget();
+                            ConfigData.ImageTargetData imageTarget =
+                                new ConfigData.ImageTargetData();
 
                             imageTarget.size = itSize;
                             imageTarget.virtualButtons =
-                                new List<ConfigData.VirtualButton>();
+                                new List<ConfigData.VirtualButtonData>();
 
                             configData.SetImageTarget(imageTarget, itNameAttr);
 
@@ -187,8 +187,8 @@ public class ConfigParser
                             }
 
                             // Parse sensitivity from config file
-                            VirtualButtonBehaviour.Sensitivity vbSensitivity =
-                                VirtualButtonBehaviour.DEFAULT_SENSITIVITY;
+                            VirtualButton.Sensitivity vbSensitivity =
+                                VirtualButton.DEFAULT_SENSITIVITY;
                             string vbSensitivityAttr =
                                 configReader.GetAttribute("sensitivity");
                             if (vbSensitivityAttr != null)
@@ -197,19 +197,19 @@ public class ConfigParser
                                     "low", true) == 0)
                                 {
                                     vbSensitivity =
-                                    VirtualButtonBehaviour.Sensitivity.LOW;
+                                    VirtualButton.Sensitivity.LOW;
                                 }
                                 else if (string.Compare(vbSensitivityAttr,
                                     "medium", true) == 0)
                                 {
                                     vbSensitivity =
-                                    VirtualButtonBehaviour.Sensitivity.MEDIUM;
+                                    VirtualButton.Sensitivity.MEDIUM;
                                 }
                                 else if (string.Compare(vbSensitivityAttr,
                                     "high", true) == 0)
                                 {
                                     vbSensitivity =
-                                    VirtualButtonBehaviour.Sensitivity.HIGH;
+                                    VirtualButton.Sensitivity.HIGH;
                                 }
                                 else
                                 {
@@ -225,8 +225,8 @@ public class ConfigParser
 
                             configReader.MoveToElement();
 
-                            ConfigData.VirtualButton virtualButton =
-                                new ConfigData.VirtualButton();
+                            ConfigData.VirtualButtonData virtualButton =
+                                new ConfigData.VirtualButtonData();
 
                             string latestITName = GetLatestITName(configData);
 
@@ -269,11 +269,11 @@ public class ConfigParser
                             }
                             configReader.MoveToElement();
 
-                            ConfigData.MultiTarget multiTarget =
-                                new ConfigData.MultiTarget();
+                            ConfigData.MultiTargetData multiTarget =
+                                new ConfigData.MultiTargetData();
 
                             multiTarget.parts =
-                                new List<ConfigData.MultiTargetPart>();
+                                new List<ConfigData.MultiTargetPartData>();
 
                             configData.SetMultiTarget(multiTarget, mtNameAttr);
                             break;
@@ -349,8 +349,8 @@ public class ConfigParser
 
                             configReader.MoveToElement();
 
-                            ConfigData.MultiTargetPart multiTargetPart =
-                                new ConfigData.MultiTargetPart();
+                            ConfigData.MultiTargetPartData multiTargetPart =
+                                new ConfigData.MultiTargetPartData();
 
                             string latestMTName = GetLatestMTName(configData);
 
@@ -388,12 +388,12 @@ public class ConfigParser
     }
 
 
-    // This method reads a config.xml file at the given path and fills the
-    // ConfigData object with the data.
+    // This method takes a configData object and creates a config.xml file at
+    // the given path out of it.
     public bool structToFile(string configXMLPath, ConfigData configData)
     {
         // If there are no trackables in the data set we don't write a config file.
-        if (configData.NumTrackables <= 0)
+        if ((configData == null) || (configData.NumTrackables <= 0))
             return false;
 
         XmlWriterSettings configWriterSettings = new XmlWriterSettings();
@@ -416,7 +416,7 @@ public class ConfigParser
             configData.CopyImageTargetNames(imageTargetNames, 0);
             for (int i = 0; i < imageTargetNames.Length; ++i)
             {
-                ConfigData.ImageTarget it;
+                ConfigData.ImageTargetData it;
 
                 configData.GetImageTarget(imageTargetNames[i], out it);
 
@@ -428,7 +428,7 @@ public class ConfigParser
 
                 // Writing Virtual Button elements into config.xml file per
                 // Image Target.
-                List<ConfigData.VirtualButton> vbs = it.virtualButtons;
+                List<ConfigData.VirtualButtonData> vbs = it.virtualButtons;
                 for (int j = 0; j < vbs.Count; j++)
                 {
                     configWriter.WriteStartElement("VirtualButton");
@@ -447,15 +447,15 @@ public class ConfigParser
                         configWriter.WriteAttributeString("enabled",
                                                           "false");
                     if (vbs[j].sensitivity ==
-                        VirtualButtonBehaviour.Sensitivity.LOW)
+                        VirtualButton.Sensitivity.LOW)
                         configWriter.WriteAttributeString("sensitivity",
                                                           "low");
                     else if (vbs[j].sensitivity ==
-                        VirtualButtonBehaviour.Sensitivity.MEDIUM)
+                        VirtualButton.Sensitivity.MEDIUM)
                         configWriter.WriteAttributeString("sensitivity",
                                                           "medium");
                     else if (vbs[j].sensitivity ==
-                        VirtualButtonBehaviour.Sensitivity.HIGH)
+                        VirtualButton.Sensitivity.HIGH)
                         configWriter.WriteAttributeString("sensitivity",
                                                           "high");
                     configWriter.WriteEndElement(); // VirtualButton
@@ -468,7 +468,7 @@ public class ConfigParser
             configData.CopyMultiTargetNames(multiTargetNames, 0);
             for (int i = 0; i < multiTargetNames.Length; i++)
             {
-                ConfigData.MultiTarget mt;
+                ConfigData.MultiTargetData mt;
 
                 configData.GetMultiTarget(multiTargetNames[i], out mt);
 
@@ -476,7 +476,7 @@ public class ConfigParser
                 configWriter.WriteAttributeString("name", multiTargetNames[i]);
 
                 // Writing Multi Target Part elements into config.xml file
-                List<ConfigData.MultiTargetPart> prts = mt.parts;
+                List<ConfigData.MultiTargetPartData> prts = mt.parts;
                 for (int j = 0; j < prts.Count; j++)
                 {
                     configWriter.WriteStartElement("Part");
