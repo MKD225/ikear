@@ -1,6 +1,6 @@
 *Kollisionen*
 
-Kollisionen zwischen eingefügen Objekten und bereits vorhandenen muss geprüft werden.
+~~Kollisionen zwischen eingefügen Objekten und bereits vorhandenen muss geprüft werden.~~
 
 *GUI*
 
