@@ -8,12 +8,16 @@ public class GUIScript : MonoBehaviour {
                 MENU_BUTTON_HEIGHT = 100;
 	public List<Transform> list;
 	public Transform tracker;
-	enum State { MAIN_MENU, BOYR_MODE, RL_MODE, ERROR }
+	public enum State { MAIN_MENU, BOYR_MODE, RL_MODE, EDIT, EDIT_MODE, ERROR}
 	public Vector2 scrollPosition = Vector2.zero;
 
-    Transform clone;	
+    Transform clone;
 	
-	State state = State.MAIN_MENU;
+	private List<Transform> objects = new List<Transform>();
+	
+	public SelectionManager sManager;
+	
+	private State state = State.MAIN_MENU;
 	
 	// Use this for initialization
 	void Start () {
@@ -21,6 +25,7 @@ public class GUIScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if(sManager.getSelected() != null) SetState(State.EDIT_MODE);
 	}
 	
 	void OnGUI(){
@@ -33,6 +38,12 @@ public class GUIScript : MonoBehaviour {
 				break;
 			case State.RL_MODE:
 				DrawRlModeGUI();
+				break;
+			case State.EDIT:
+				DrawEditBtn();
+				break;
+			case State.EDIT_MODE:
+				DrawEditGUI();
 				break;
 			case State.ERROR:
 				DrawErrorGUI();
@@ -62,14 +73,11 @@ public class GUIScript : MonoBehaviour {
 			Application.Quit();
 	
 		}
-		GUILayout.EndHorizontal();	
-		
-		
+		GUILayout.EndHorizontal();		
 	}
 
     void DrawRlModeGUI()
-    {
-		
+    {		
 		GUILayout.BeginHorizontal();
 		if(GUILayout.Button ("Back to main menu", GUILayout.Height(MENU_BUTTON_HEIGHT))){
 			SetState(State.MAIN_MENU);				
@@ -77,8 +85,7 @@ public class GUIScript : MonoBehaviour {
 		GUILayout.EndHorizontal();
 
         scrollPosition = GUI.BeginScrollView(new Rect(0, 100, 150, Mathf.Min(600,list.Count * FURN_BUTTON_HEIGHT)), scrollPosition, new Rect(0, 100, 120, list.Count * FURN_BUTTON_HEIGHT), false, 600  < list.Count * FURN_BUTTON_HEIGHT);
-		
-		
+				
 		foreach(Transform t in list){
 			GUILayout.BeginHorizontal();
             if (GUILayout.Button(Resources.Load(t.name) as Texture2D))   // PRECONDITION: Bild mit namen des Prefabs ind er Liste muss im Resources Ordner liegen - 125 * 90 PX
@@ -86,11 +93,10 @@ public class GUIScript : MonoBehaviour {
 				clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as Transform;			
 
 				clone.parent = tracker;
-
+				objects.Add (clone);
 			}	
 			GUILayout.EndHorizontal();		
-		}
-		
+		}		
 		GUI.EndScrollView();
 	}
 
@@ -104,14 +110,48 @@ public class GUIScript : MonoBehaviour {
 		GUILayout.EndHorizontal();
 	}
 	
+	
 	void DrawErrorGUI(){
 	}
 	
 	void SetState(State state){
 		this.state = state;
 	}
-
-
-
+	
+	void DrawEditBtn(){
+		GUILayout.BeginVertical();
+        if (GUILayout.Button("Edit", GUILayout.Height(FURN_BUTTON_HEIGHT), GUILayout.Width(150)))
+        {
+			SetState(State.EDIT_MODE);
+		}
+		GUILayout.EndHorizontal();
+	}	
+	
+	void DrawEditGUI(){
+		GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Move", GUILayout.Height(FURN_BUTTON_HEIGHT), GUILayout.Width(150)))
+        {
+			sManager.setState(SelectionManager.State.TRANSLATE);
+			//sManager.state = SelectionManager.State.TRANSLATE;			
+		}
+		GUILayout.EndHorizontal();
+		
+		GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Rotate", GUILayout.Height(FURN_BUTTON_HEIGHT)))
+        {
+			sManager.setState(SelectionManager.State.ROTATE);
+			//sManager.state = SelectionManager.State.ROTATE;					
+		}
+		GUILayout.EndHorizontal();
+		
+		GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Cancel", GUILayout.Height(FURN_BUTTON_HEIGHT)))
+        {
+			sManager.setState(SelectionManager.State.SELECTION);
+			//sManager.state = SelectionManager.State.SELECTION;
+			SetState(State.MAIN_MENU);				
+		}
+		GUILayout.EndHorizontal();
+	}
    
 }

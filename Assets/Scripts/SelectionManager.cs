@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SelectionManager : MonoBehaviour
 {
@@ -9,6 +10,12 @@ public class SelectionManager : MonoBehaviour
 	private bool changedSelected;
 	private Color oldOnMouseColor;
 	private bool changedOnMouse;
+	
+	public GUIScript gui;
+		
+	public enum State{SELECTION, TRANSLATE, ROTATE};
+	
+	private State state = State.SELECTION;	
 	
 	// Use this for initialization
 	void Start ()
@@ -22,8 +29,9 @@ public class SelectionManager : MonoBehaviour
 	{
 		changedSelected = false;
 		changedOnMouse = false;
+				
 		mouseon = giveCastTarget ();
-		System.Console.WriteLine("BIATCH");
+
 		//if mouse clicked -> select current rayhit 
 		if (Input.GetMouseButtonDown (0)) {
 			if (mouseon != null && selected != mouseon) {
@@ -44,9 +52,11 @@ public class SelectionManager : MonoBehaviour
 		mouseOverColor ();	
 		selectColor ();
 	
-		oldmouseon = mouseon;	
+		oldmouseon = mouseon;
+		
 	
 		if(selected){
+			
 			if (Input.GetKeyDown (KeyCode.Delete)) {
 				GameObject.Destroy (selected);
 			}
@@ -56,19 +66,19 @@ public class SelectionManager : MonoBehaviour
 			}
 			else if(Input.GetKeyDown(KeyCode.DownArrow)){
 				selected.transform.Translate(Vector3.down ,  Space.World);
-			}
+			}						
 			
-			//move
-			if (Input.touchCount == 2 && Input.touches[0].phase == TouchPhase.Moved){
-				Vector3 trans = new Vector3(-Input.touches[0].deltaPosition.x, 0, -Input.touches[0].deltaPosition.y)*0.1F;
-				selected.transform.Translate(-trans, Space.World);
+			//translation
+			if (Input.touchCount == 1 && Input.touches[0].phase == TouchPhase.Moved && (state == State.TRANSLATE)){
+				Vector3 trans = new Vector3(Input.touches[0].deltaPosition.x, 0, Input.touches[0].deltaPosition.y)*0.4F;
+				selected.transform.Translate(trans, Space.World);
 			}				
 			
 		    //rorate        
-		    if (Input.touchCount == 1 && Input.touches[0].phase == TouchPhase.Moved){
+		    if (Input.touchCount == 1 && Input.touches[0].phase == TouchPhase.Moved && (state == State.ROTATE)){
 				selected.transform.Rotate(0, -Input.touches[0].deltaPosition.x, 0, Space.World);
 			}
-			//end rotate
+
 		}		
 	}
 	
@@ -118,4 +128,12 @@ public class SelectionManager : MonoBehaviour
 		return null;
 	}
 	
+	public GameObject getSelected(){
+		return selected;
+	}
+	
+	public void setState(State state){
+		this.state = state;
+	}
+		
 }
