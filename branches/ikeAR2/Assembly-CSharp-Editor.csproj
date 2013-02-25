@@ -81,6 +81,7 @@
      <None Include="Assets\readme.txt" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
      <None Include="Assets\license_3rdpartynotice.txt" />
+     <None Include="Assets\Shaders\Diffuse Rim.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj">
