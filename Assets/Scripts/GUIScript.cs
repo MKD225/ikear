@@ -143,6 +143,16 @@ public class GUIScript : MonoBehaviour {
 			//sManager.state = SelectionManager.State.ROTATE;					
 		}
 		GUILayout.EndHorizontal();
+			
+		GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Remove", GUILayout.Height(FURN_BUTTON_HEIGHT)))
+        {
+			sManager.setSelected ();
+			GameObject.Destroy(sManager.getOldSelected());			
+			sManager.setState(SelectionManager.State.SELECTION);
+			SetState(State.MAIN_MENU);	
+		}
+		GUILayout.EndHorizontal();
 		
 		GUILayout.BeginHorizontal();
         if (GUILayout.Button("Cancel", GUILayout.Height(FURN_BUTTON_HEIGHT)))

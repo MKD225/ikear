@@ -1,10 +1,9 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CollisionCheckScript.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\GUIScript.cs">
     <Files>
-      <File FileName="Assets\Scripts\GUIScript.cs" Line="26" Column="36" />
-      <File FileName="Assets\Scripts\CollisionCheckScript.cs" Line="17" Column="4" />
-      <File FileName="Assets\Scripts\SelectionManager.cs" Line="123" Column="38" />
+      <File FileName="Assets\Scripts\SelectionManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\GUIScript.cs" Line="151" Column="38" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -4,7 +4,7 @@ using System.Collections;
 public class mousestuff : MonoBehaviour {
 	
 	
-	bool selected = false;
+	//bool selected = false;
 	// Use this for initialization
 	void Start () {
 	
@@ -19,6 +19,6 @@ public class mousestuff : MonoBehaviour {
 	
 	void OnSelect()
 	{
-		this.selected = true;
+		//this.selected = true;
 	}
 }
