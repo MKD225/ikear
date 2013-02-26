@@ -13,3 +13,6 @@ Models verschiedener Möbel orgen, in Unity einpflegen.
 *GlowShader*
 
 Ein Shader der das Selektierte Objekt aufleuchten lässt.
+
+
+*---> Scale der Models auf "Reallife größe" anpassen*
