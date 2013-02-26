@@ -11,6 +11,7 @@ public class GUIScript : MonoBehaviour {
 	public enum State { MAIN_MENU, BOYR_MODE, RL_MODE, EDIT, EDIT_MODE, ERROR}
 	public Vector2 scrollPosition = Vector2.zero;
 
+
     Transform clone;
 	
 	private List<Transform> objects = new List<Transform>();
@@ -25,7 +26,7 @@ public class GUIScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(sManager.getSelected() != null) SetState(State.EDIT_MODE);
+		//if(sManager.getSelected() != null) SetState(State.EDIT_MODE);
 	}
 	
 	void OnGUI(){
@@ -114,7 +115,7 @@ public class GUIScript : MonoBehaviour {
 	void DrawErrorGUI(){
 	}
 	
-	void SetState(State state){
+	public void SetState(State state){
 		this.state = state;
 	}
 	
@@ -146,19 +147,19 @@ public class GUIScript : MonoBehaviour {
 			
 		GUILayout.BeginHorizontal();
         if (GUILayout.Button("Remove", GUILayout.Height(FURN_BUTTON_HEIGHT)))
-        {
-			sManager.setSelected ();
-			GameObject.Destroy(sManager.getOldSelected());			
+        {	
+			sManager.deselect();
+			Destroy (sManager.getOldSelected());
 			sManager.setState(SelectionManager.State.SELECTION);
-			SetState(State.MAIN_MENU);	
+			SetState(State.MAIN_MENU);		
 		}
 		GUILayout.EndHorizontal();
 		
 		GUILayout.BeginHorizontal();
         if (GUILayout.Button("Cancel", GUILayout.Height(FURN_BUTTON_HEIGHT)))
         {
+			sManager.deselect();
 			sManager.setState(SelectionManager.State.SELECTION);
-			//sManager.state = SelectionManager.State.SELECTION;
 			SetState(State.MAIN_MENU);				
 		}
 		GUILayout.EndHorizontal();
