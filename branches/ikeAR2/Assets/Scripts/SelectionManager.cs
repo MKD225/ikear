@@ -16,6 +16,12 @@ public class SelectionManager : MonoBehaviour
 	public enum State{SELECTION, TRANSLATE, ROTATE};
 	
 	private State state = State.SELECTION;	
+			
+	
+	Rect windowRect = new Rect(0,0,150,400);
+	Vector2 mousePos;
+	bool ignoreRaycast;
+	
 	
 	// Use this for initialization
 	void Start ()
@@ -27,33 +33,41 @@ public class SelectionManager : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		
+		mousePos.x = Input.mousePosition.x;
+		mousePos.y = Screen.height - Input.mousePosition.y;
+		
+		ignoreRaycast = windowRect.Contains(mousePos);
+		
 		changedSelected = false;
 		changedOnMouse = false;
-				
-		mouseon = giveCastTarget ();
-
-		//if mouse clicked -> select current rayhit 
-		if (Input.GetMouseButtonDown (0) && state == State.SELECTION) {
-			if (mouseon != null && selected != mouseon) {
-				oldselected = selected;
-				selected = mouseon;
-				changedSelected = true;
-			}
-			if(mouseon == null && selected != null)
-			{
-				foreach (Transform t in selected.transform) {
-					oldColor = t.renderer.material.color;
-					t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
-				}    
-				oldselected = selected;
-				selected = null;
-			}
-		}
-		mouseOverColor ();	
-		selectColor ();
-	
-		oldmouseon = mouseon;
 		
+		if(!ignoreRaycast){		
+			mouseon = giveCastTarget ();
+	
+			//if mouse clicked -> select current rayhit 
+			if (Input.GetMouseButtonDown (0) && state == State.SELECTION) {
+				if (mouseon != null && selected != mouseon) {
+					oldselected = selected;
+					selected = mouseon;
+					changedSelected = true;
+					gui.SetState(GUIScript.State.EDIT_MODE);
+				}
+				if(mouseon == null && selected != null)
+				{
+					foreach (Transform t in selected.transform) {
+						oldColor = t.renderer.material.color;
+						t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+					}    
+					oldselected = selected;
+					selected = null;
+				}
+			}
+			mouseOverColor ();	
+			selectColor ();
+		
+			oldmouseon = mouseon;
+		}
 	
 		if(selected){
 			
@@ -133,7 +147,7 @@ public class SelectionManager : MonoBehaviour
 	public GameObject getSelected(){
 		return selected;
 	}
-	public void setSelected(){
+	public void deselect(){
 		oldselected = selected;
 		selected = null;
 	}
