@@ -134,6 +134,7 @@
      <Compile Include="Assets\Scripts\CloudRecoScripts\ErrorMsg.cs" />
      <Compile Include="Assets\Scripts\CloudRecoScripts\JSONParser.cs" />
      <Compile Include="Assets\Scripts\CloudRecoScripts\StarsRatingControl.cs" />
+     <Compile Include="Assets\Scripts\CollisionCheckScript.cs" />
      <Compile Include="Assets\Scripts\GUIScript.cs" />
      <Compile Include="Assets\Scripts\LoadingScene\LoadingManager.cs" />
      <Compile Include="Assets\Scripts\SelectionManager.cs" />
@@ -143,15 +144,12 @@
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\RenderVideoBackground.shader" />
      <None Include="Assets\Shaders\Transparent Vertex Colored Index -1.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
-     <None Include="Assets\license.txt" />
      <None Include="Assets\Editor\QCAR\WebcamProfiles\profiles.xml" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
      <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
      <None Include="Assets\Shaders\Transparent Vertex Colored Index -2.shader" />
-     <None Include="Assets\readme.txt" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
-     <None Include="Assets\license_3rdpartynotice.txt" />
      <None Include="Assets\Shaders\Diffuse Rim.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

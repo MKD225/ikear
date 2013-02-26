@@ -122,8 +122,10 @@ public class SelectionManager : MonoBehaviour
 	{
 		RaycastHit hit = new RaycastHit ();
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-		if (Physics.Raycast (ray, out hit, 1500)) {
+		if (Physics.Raycast (ray, out hit, 5500)) {
+			if(hit.collider.gameObject.name != "Plane"){
 			return hit.collider.gameObject;	
+			}
 		}
 		return null;
 	}
