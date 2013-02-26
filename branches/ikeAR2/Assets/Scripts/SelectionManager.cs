@@ -33,7 +33,7 @@ public class SelectionManager : MonoBehaviour
 		mouseon = giveCastTarget ();
 
 		//if mouse clicked -> select current rayhit 
-		if (Input.GetMouseButtonDown (0)) {
+		if (Input.GetMouseButtonDown (0) && state == State.SELECTION) {
 			if (mouseon != null && selected != mouseon) {
 				oldselected = selected;
 				selected = mouseon;
@@ -132,6 +132,14 @@ public class SelectionManager : MonoBehaviour
 	
 	public GameObject getSelected(){
 		return selected;
+	}
+	public void setSelected(){
+		oldselected = selected;
+		selected = null;
+	}
+	
+	public GameObject getOldSelected(){
+		return oldselected;
 	}
 	
 	public void setState(State state){
