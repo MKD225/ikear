@@ -153,5 +153,8 @@ public class GUIScript : MonoBehaviour {
 		}
 		GUILayout.EndHorizontal();
 	}
+		public void setState(State state){
+		this.state = state;
+	}
    
 }
