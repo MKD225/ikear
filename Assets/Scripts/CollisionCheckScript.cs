@@ -11,16 +11,20 @@ public class CollisionCheckScript : MonoBehaviour {
 	}
 	
     void OnTriggerEnter(Collider other) {
-
-   	 Debug.Log("Collision");
-        
+		foreach (Transform t in other.transform) {
+			t.renderer.material.color += new Color (0.2F, 0.8F, 0.2F);
+		}   
+		Debug.Log("Collision");        
     }
 	
 	void OnTriggerStay(Collider other){
-	 Debug.Log("Collision");
+	 	Debug.Log("Collision");
 	}
 	
-	void OnTriggerExit(Collider other){
+	void OnTriggerExit(Collider other){		
+		foreach (Transform t in other.transform) {
+			t.renderer.material.color -= new Color (0.2F, 0.8F, 0.2F);
+		}   
 		Debug.Log("COLLISION EXIT");
 	}
 }

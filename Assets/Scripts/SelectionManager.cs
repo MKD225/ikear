@@ -148,6 +148,10 @@ public class SelectionManager : MonoBehaviour
 		return selected;
 	}
 	public void deselect(){
+		foreach (Transform t in selected.transform) {
+			oldColor = t.renderer.material.color;
+			t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+		}    
 		oldselected = selected;
 		selected = null;
 	}
