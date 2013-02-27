@@ -70,16 +70,15 @@
      <Compile Include="Assets\Editor\QCAR\Scripts\VirtualButtonEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\WebCamEditor.cs" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\RenderVideoBackground.shader" />
-     <None Include="Assets\Shaders\Transparent Vertex Colored Index -1.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+     <None Include="Assets\Shaders\Normal-Diffuse.shader" />
+     <None Include="Assets\Shaders\Normal-Diffuse-Test.shader" />
      <None Include="Assets\license.txt" />
      <None Include="Assets\Editor\QCAR\WebcamProfiles\profiles.xml" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
      <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
-     <None Include="Assets\Shaders\Transparent Vertex Colored Index -2.shader" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
-     <None Include="Assets\Shaders\Diffuse Rim.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
