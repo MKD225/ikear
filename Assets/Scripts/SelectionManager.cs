@@ -15,7 +15,7 @@ public class SelectionManager : MonoBehaviour
 		
 	public enum State{SELECTION, TRANSLATE, ROTATE};
 	
-	private State state = State.SELECTION;	
+	public State state = State.SELECTION;	
 			
 	
 	Rect windowRect = new Rect(0,0,150,400);
@@ -147,6 +147,7 @@ public class SelectionManager : MonoBehaviour
 	public GameObject getSelected(){
 		return selected;
 	}
+	
 	public void deselect(){
 		foreach (Transform t in selected.transform) {
 			oldColor = t.renderer.material.color;
