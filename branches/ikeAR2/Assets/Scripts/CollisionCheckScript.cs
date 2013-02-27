@@ -6,8 +6,9 @@ public class CollisionCheckScript : MonoBehaviour {
 
 	bool triggered = false;
 	Collider other;
-	public Shader shader1 = Shader.Find("Diffuse");
-    public Shader shader2 = Shader.Find("Transparent Vertex Colored Index -1");
+	private Shader shader1 = Shader.Find ("Diffuse");
+    private Shader shader2 = Shader.Find ("Diffuse-Test");
+
 	
 	void Start () {
 
