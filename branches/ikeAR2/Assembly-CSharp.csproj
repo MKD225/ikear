@@ -150,7 +150,9 @@
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
      <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
+     <None Include="Assets\Shaders\Mobile-Diffuse.shader" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
+     <None Include="Assets\Shaders\Mobile-Diffuse-Highlight.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
