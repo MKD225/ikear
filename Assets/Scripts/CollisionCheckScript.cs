@@ -3,38 +3,46 @@ using System.Collections;
 
 public class CollisionCheckScript : MonoBehaviour {
 	
-	private Color[] originalColor;
+
+	bool triggered = false;
+	Collider other;
+	public Shader shader1 = Shader.Find("Diffuse");
+    public Shader shader2 = Shader.Find("Diffuse Rim");
 	
 	void Start () {
+
+	}
 	
-		if(this.transform.renderer != null){
-			originalColor = new Color[this.transform.childCount];
-			int i = 0;
-			foreach(Transform t in this.transform)
-			{
-				originalColor[i] = t.renderer.material.color;
-				i++;
-			}
+	void Update(){
+		if(triggered && !other){
+			exit ();
 		}
 	}
 	
 	void OnTriggerEnter(Collider other) {
-		foreach (Transform t in other.transform) {
-			t.renderer.material.color = Color.red;
+		foreach (Transform t in this.transform) {
+			t.renderer.material.shader = shader2;
 		}   
+		triggered = true;
+		this.other = other;
 		Debug.Log("Collision ENTER");        
     }
 	
 	void OnTriggerStay(Collider other){
-	 	Debug.Log("Collision" + " " + other.name);
-		
+	 //	Debug.Log("Collision" + " " + other.name);
 	}
 	
-	void OnTriggerExit(Collider other){		
-		int i = 0;
-		foreach (Transform t in other.transform) {
-			t.renderer.material.color = originalColor[i];
-		}   
+	void OnTriggerExit(Collider other){	
+		 exit ();
+	}
+	
+	void exit(){
 		Debug.Log("COLLISION EXIT");
+		triggered = false;
+		foreach (Transform t in this.transform) {
+			t.renderer.material.shader = shader1;
+		}  
+		
 	}
 }
+	
