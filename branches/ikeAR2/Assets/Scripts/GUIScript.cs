@@ -26,7 +26,8 @@ public class GUIScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		//if(sManager.getSelected() != null) SetState(State.EDIT_MODE);
+		if(sManager.getSelected() == null && this.state == State.EDIT_MODE && sManager.state  ==  SelectionManager.State.SELECTION)
+			SetState(State.RL_MODE);
 	}
 	
 	void OnGUI(){
