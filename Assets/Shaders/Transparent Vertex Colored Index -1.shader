@@ -1,6 +1,6 @@
 Shader "Transparent/Vertex Colored Index-1" {
 Properties {
-	_Color ("Main Color", Color) = (0.5,0.5,0.5,1)
+	_Color ("Main Color", Color) = (0.9,0.3,0.3,1)
 	_Emission ("Emmisive Color", Color) = (0,0,0,0)
 	_MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
 }

@@ -7,7 +7,7 @@ public class CollisionCheckScript : MonoBehaviour {
 	bool triggered = false;
 	Collider other;
 	public Shader shader1 = Shader.Find("Diffuse");
-    public Shader shader2 = Shader.Find("Diffuse Rim");
+    public Shader shader2 = Shader.Find("Transparent Vertex Colored Index -1");
 	
 	void Start () {
 
