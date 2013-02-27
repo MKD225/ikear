@@ -78,7 +78,9 @@
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
      <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
+     <None Include="Assets\Shaders\Mobile-Diffuse.shader" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
+     <None Include="Assets\Shaders\Mobile-Diffuse-Highlight.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj">
