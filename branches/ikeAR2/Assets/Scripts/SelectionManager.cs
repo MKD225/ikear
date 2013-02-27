@@ -10,7 +10,7 @@ public class SelectionManager : MonoBehaviour
 	private bool changedSelected;
 	private Color oldOnMouseColor;
 	private bool changedOnMouse;
-	
+
 	public GUIScript gui;
 		
 	public enum State{SELECTION, TRANSLATE, ROTATE};
@@ -72,6 +72,7 @@ public class SelectionManager : MonoBehaviour
 		if(selected){
 			
 			if (Input.GetKeyDown (KeyCode.Delete)) {
+				selected.transform.Translate(Vector3.up * 5000);
 				GameObject.Destroy (selected);
 			}
 			

@@ -17,7 +17,7 @@ public class GUIScript : MonoBehaviour {
 	private List<Transform> objects = new List<Transform>();
 	
 	public SelectionManager sManager;
-	
+	private bool removed = false;	
 	private State state = State.MAIN_MENU;
 	
 	// Use this for initialization
@@ -147,12 +147,18 @@ public class GUIScript : MonoBehaviour {
 		GUILayout.EndHorizontal();
 			
 		GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Remove", GUILayout.Height(FURN_BUTTON_HEIGHT)))
-        {	
+		if(removed){
 			sManager.deselect();
 			Destroy (sManager.getOldSelected());
 			sManager.setState(SelectionManager.State.SELECTION);
-			SetState(State.MAIN_MENU);		
+			SetState(State.MAIN_MENU);	
+			removed = false;
+		}
+        if (GUILayout.Button("Remove", GUILayout.Height(FURN_BUTTON_HEIGHT)))
+        {	
+			sManager.getSelected().transform.Translate(new Vector3(50000,50000,50000), Space.World);
+			removed = true;
+	
 		}
 		GUILayout.EndHorizontal();
 		
