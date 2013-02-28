@@ -148,13 +148,10 @@
      <None Include="Assets\Resources\Normal-Diffuse.shader" />
      <None Include="Assets\Editor\QCAR\WebcamProfiles\profiles.xml" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
-     <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
      <None Include="Assets\Resources\Transparent Vertex Colored Index -2.shader" />
-     <None Include="Assets\Resources\Diffuse Rim.shader" />
      <None Include="Assets\Resources\Normal-Diffuse-Test.shader" />
-     <None Include="Assets\Resources\Transparent Vertex Colored Index -1.shader" />
      <None Include="Assets\Resources\Mobile-Diffuse-Highlight.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

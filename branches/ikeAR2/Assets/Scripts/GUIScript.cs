@@ -99,8 +99,8 @@ public class GUIScript : MonoBehaviour {
 			GUILayout.BeginHorizontal();
             if (GUILayout.Button(Resources.Load(t.name) as Texture2D))   // PRECONDITION: Bild mit namen des Prefabs ind er Liste muss im Resources Ordner liegen - 125 * 90 PX
             {	
-				if(t.tag == "Stuhl")	clone = Instantiate(t,new Vector3(0, 65, 0), Quaternion.identity) as Transform;
-				
+				if(t.tag == "WoodenTable")	clone = Instantiate(t,new Vector3(0, 194, 0), Quaternion.identity) as Transform;
+				else if(t.tag == "WoodenChair") clone = Instantiate(t, new Vector3(0,307,0), Quaternion.identity) as Transform;
 				else clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as Transform;
 
 				clone.parent = tracker;
