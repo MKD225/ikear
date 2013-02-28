@@ -22,7 +22,7 @@ public class CollisionCheckScript : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider other) {
 		foreach (Transform t in this.transform) {
-			t.renderer.material.shader = shader2;
+			t.renderer.material.color += new Color(0.5,0.2,0.2,1);
 		}   
 		triggered = true;
 		this.other = other;
@@ -41,7 +41,7 @@ public class CollisionCheckScript : MonoBehaviour {
 		Debug.Log("COLLISION EXIT");
 		triggered = false;
 		foreach (Transform t in this.transform) {
-			t.renderer.material.shader = shader1;
+			t.renderer.material.color -= new Color(0.5,0.2,0.2,1);
 		}  
 		
 	}
