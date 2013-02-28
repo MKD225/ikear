@@ -57,15 +57,15 @@ public class SelectionManager : MonoBehaviour
 				{
 					foreach (Transform t in selected.transform) {
 						oldColor = t.renderer.material.color;
-						t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+						t.renderer.material.color -= new Color (0.4F, 0.4F, 0.4F);
 					}    
 					oldselected = selected;
 					selected = null;
 				}
 			}
-			mouseOverColor ();	
+			
 			selectColor ();
-		
+			//mouseOverColor();
 			oldmouseon = mouseon;
 		}
 	
@@ -122,13 +122,13 @@ public class SelectionManager : MonoBehaviour
 		if (selected != null && changedSelected) {
 			foreach (Transform t in selected.transform) {
 				oldColor = t.renderer.material.color;
-				t.renderer.material.color += new Color (0.4F, 0.4F, 0.8F);
+				t.renderer.material.color += new Color (0.4F, 0.4F, 0.4F);
 			}    
 		}
 	
 		if (changedSelected && oldselected != null) {
 			foreach (Transform t in oldselected.transform) {
-				t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+				t.renderer.material.color -= new Color (0.4F, 0.4F, 0.4F);
 			}   
 		}
 	}
@@ -152,7 +152,7 @@ public class SelectionManager : MonoBehaviour
 	public void deselect(){
 		foreach (Transform t in selected.transform) {
 			oldColor = t.renderer.material.color;
-			t.renderer.material.color -= new Color (0.4F, 0.4F, 0.8F);
+			t.renderer.material.color -= new Color (0.4F, 0.4F, 0.4F);
 		}    
 		oldselected = selected;
 		selected = null;
