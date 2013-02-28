@@ -6,8 +6,8 @@ public class CollisionCheckScript : MonoBehaviour {
 
 	bool triggered = false;
 	Collider other;
-	private Shader shader1 = Shader.Find ("Diffuse");
-    private Shader shader2 = Shader.Find ("Diffuse-Test");
+	private Shader shader1 = Shader.Find ("Mobile/Diffuse");
+    private Shader shader2 = Shader.Find ("Mobile/Diffuse-Highlight");
 
 	
 	void Start () {

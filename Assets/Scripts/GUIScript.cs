@@ -66,7 +66,14 @@ public class GUIScript : MonoBehaviour {
         {
 			SetState (State.RL_MODE);
 		}
-		GUILayout.EndHorizontal();	
+		GUILayout.EndHorizontal();
+		
+		GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Screenshot", GUILayout.Height(MENU_BUTTON_HEIGHT)))
+        {
+			Application.CaptureScreenshot("Screenshot_" + System.DateTime.Now.ToString ("yyyy-MM-dd_hh-mm-ss") + ".jpg");	
+		}
+		GUILayout.EndHorizontal();
 		
 		GUILayout.BeginHorizontal();
 
@@ -92,7 +99,9 @@ public class GUIScript : MonoBehaviour {
 			GUILayout.BeginHorizontal();
             if (GUILayout.Button(Resources.Load(t.name) as Texture2D))   // PRECONDITION: Bild mit namen des Prefabs ind er Liste muss im Resources Ordner liegen - 125 * 90 PX
             {	
-				clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as Transform;			
+				if(t.tag == "Stuhl")	clone = Instantiate(t,new Vector3(0, 65, 0), Quaternion.identity) as Transform;
+				
+				else clone = Instantiate(t,new Vector3(0, 0, 0), Quaternion.identity) as Transform;
 
 				clone.parent = tracker;
 				objects.Add (clone);
