@@ -1,7 +1,8 @@
 Shader "Diffuse-Test" {
 Properties {
 	_Color ("Main Color", Color) = (1,1,1,1)
-	_MainTex ("Base (RGB)", 2D) = "red" {}
+	
+	_MainTex ("Base (RGB)", 2D) = "white" {}
 }
 SubShader {
 	Tags { "RenderType"="Opaque" }
@@ -19,8 +20,9 @@ struct Input {
 
 void surf (Input IN, inout SurfaceOutput o) {
 	fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+	c[0] = 1;
 	o.Albedo = c.rgb;
-	o.Alpha = c.a * 0.5;
+	o.Alpha = c.a;
 }
 ENDCG
 }
