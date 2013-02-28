@@ -1,9 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CollisionCheckScript.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Resources\Normal-Diffuse-Test.shader">
     <Files>
-      <File FileName="Assets\Scripts\CollisionCheckScript.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GUIScript.cs" Line="102" Column="65" />
+      <File FileName="Assets\Scripts\SelectionManager.cs" Line="106" Column="39" />
+      <File FileName="Assets\Scripts\CollisionCheckScript.cs" Line="10" Column="56" />
+      <File FileName="Assets\Resources\Normal-Diffuse-Test.shader" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
