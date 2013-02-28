@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_3_5_7;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_ANDROID;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_DUCK_TYPING</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_2;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_ANDROID;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_DUCK_TYPING</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -69,22 +69,21 @@
      <Compile Include="Assets\Editor\QCAR\Scripts\UserDefinedTargetBuilderEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\VirtualButtonEditor.cs" />
      <Compile Include="Assets\Editor\QCAR\Scripts\WebCamEditor.cs" />
-     <None Include="Assets\license_3rdpartynotice.txt" />
+     <None Include="Assets\Resources\Mobile-Diffuse.shader" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\RenderVideoBackground.shader" />
-     <None Include="Assets\Shaders\Transparent Vertex Colored Index -1.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
-     <None Include="Assets\Shaders\Normal-Diffuse.shader" />
-     <None Include="Assets\Shaders\Normal-Diffuse-Test.shader" />
      <None Include="Assets\license.txt" />
+     <None Include="Assets\Resources\Normal-Diffuse.shader" />
      <None Include="Assets\Editor\QCAR\WebcamProfiles\profiles.xml" />
      <None Include="Assets\Qualcomm Augmented Reality\Shaders\DepthMask.shader" />
      <None Include="Assets\Resources\Vuforia_About.txt" />
      <None Include="Assets\StreamingAssets\QCAR\ikeAR.xml" />
-     <None Include="Assets\Shaders\Transparent Vertex Colored Index -2.shader" />
-     <None Include="Assets\Shaders\Mobile-Diffuse.shader" />
      <None Include="Assets\StreamingAssets\QCAR\unity.txt" />
-     <None Include="Assets\Shaders\Mobile-Diffuse-Highlight.shader" />
-     <None Include="Assets\Shaders\Diffuse Rim.shader" />
+     <None Include="Assets\Resources\Transparent Vertex Colored Index -2.shader" />
+     <None Include="Assets\Resources\Diffuse Rim.shader" />
+     <None Include="Assets\Resources\Normal-Diffuse-Test.shader" />
+     <None Include="Assets\Resources\Transparent Vertex Colored Index -1.shader" />
+     <None Include="Assets\Resources\Mobile-Diffuse-Highlight.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
